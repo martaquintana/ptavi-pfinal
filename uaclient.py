@@ -4,8 +4,13 @@
 import sys
 import socket
 from xml.sax import make_parser
-from xml.sax.handler import ContentHandler
 
+
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+
+from xml.sax import make_parser
+from xml.sax.handler import ContentHandler
 
 class XMLHandler(ContentHandler):
 
@@ -16,7 +21,7 @@ class XMLHandler(ContentHandler):
             "uaserver": ['ip', 'puerto'],
             "rtpaudio": ['puerto'],
             "regproxy": ['ip', 'puerto'],
-            "log": ['path']
+            "log": ['path'],
             "audio": ['path']
             }
         self.tag_list = []
@@ -31,10 +36,26 @@ class XMLHandler(ContentHandler):
             for atributo in self.diccionario[name]:
                 dic_tag[atributo] = attrs.get(atributo, "")
             self.tag_list.append(dic_tag)
+
     def get_tags(self):
-        """
-        Devuelve la lista de etiquetas,
-        sus atributos y el contenido de los atributos
-        """
         return self.tag_list
-       
+
+class XML:
+
+    def __init__(self, fichero):
+        self.get_tags = []
+        self.dicc = {}
+        parser = make_parser()
+        cHandler = XMLHandler()
+        parser.setContentHandler(cHandler)
+        parser.parse(open(fichero))
+        self.get_tags = cHandler.get_tags()
+        print(self.get_tags)
+  
+if __name__ == "__main__":
+    """
+    Programa principal
+    """
+    fichero = sys.argv[1]
+    leerxml = XML(fichero)
+   
