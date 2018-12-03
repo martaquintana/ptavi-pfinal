@@ -4,12 +4,6 @@
 import sys
 import socket
 from xml.sax import make_parser
-
-
-#!/usr/bin/python3
-# -*- coding: utf-8 -*-
-
-from xml.sax import make_parser
 from xml.sax.handler import ContentHandler
 
 class XMLHandler(ContentHandler):
@@ -24,21 +18,17 @@ class XMLHandler(ContentHandler):
             "log": ['path'],
             "audio": ['path']
             }
-        self.tag_list = []
-        self.etiquetas = self.diccionario.keys()
+        self.dic_config = {}
 
     def startElement(self, name, attrs):
 
-        dic_tag = {}
-        if name in self.etiquetas:
-            dic_tag['etiqueta'] = name
+        if name in self.diccionario.keys():
             # De esta manera tomamos los valores de los atributos
             for atributo in self.diccionario[name]:
-                dic_tag[atributo] = attrs.get(atributo, "")
-            self.tag_list.append(dic_tag)
+                self.dic_config[name + '_' + atributo] = attrs.get(atributo, "")
 
     def get_tags(self):
-        return self.tag_list
+        return self.dic_config
 
 class XML:
 

@@ -4,12 +4,6 @@
 import sys
 import socket
 from xml.sax import make_parser
-
-
-#!/usr/bin/python3
-# -*- coding: utf-8 -*-
-
-from xml.sax import make_parser
 from xml.sax.handler import ContentHandler
 from uaclient import XMLHandler
 
