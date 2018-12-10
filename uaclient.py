@@ -59,10 +59,12 @@ if __name__ == "__main__":
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as my_socket:
             my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             my_socket.connect((DIC_CONFIG['uaserver_ip'], int(DIC_CONFIG['uaserver_puerto'])))
+            print(METODO)
             if METODO == 'REGISTER':
+                print("asdfas")
                 line = (
                     'REGISTER sip:' + DIC_CONFIG['account_username'] + ':' + '1234'
-                     + ' SIP/2.0\r\n' + 'Expires: ' + OPCION + '\r\n')
+                     + ' SIP/2.0\r\n\r\n' + 'Expires: ' + OPCION + '\r\n')
                 print("Enviando:", line)
                 my_socket.send(bytes(line, 'utf-8'))
                 data = my_socket.recv(1024)
@@ -74,7 +76,15 @@ if __name__ == "__main__":
                 my_socket.send(bytes(line, 'utf-8'))
                 data = my_socket.recv(1024)
                 print(data.decode('utf-8'))
-            else:
+                if METODO == 'INVITE':
+                     line = ('Content-Type:' + ' application/sdp\r\n' + 'v=0\r\n'
+							+ 'o=' + DIC_CONFIG['account_username'] + DIC_CONFIG['uaserver_ip']+ '\r\n'
+							+ 's= misesion\r\n' + 't=0' + 'm=audio ' + DIC_CONFIG['rtpaudio_puerto']+ ' RTP\r\n')
+                     print("Enviando:", line)
+                     my_socket.send(bytes(line, 'utf-8'))
+                     data = my_socket.recv(1024)
+                     print('Recibido -- ', data.decode('utf-8'))
+            elif METODO != ('REGISTER' or 'INVITE' or 'BYE'):
                 print("Solo puedes enviar Métodos REGISTER, INVITE o BYE")
 
             if METODO == 'INVITE' and data.decode('utf-8').split()[-2] == '200':
