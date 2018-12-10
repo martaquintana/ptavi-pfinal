@@ -69,17 +69,25 @@ if __name__ == "__main__":
                 print("asdfas")
                 line = (
                     'REGISTER sip:' + DIC_CONFIG['account_username'] + ':' + '1234'
-                     + ' SIP/2.0\r\n\r\n' + 'Expires: ' + OPCION + '\r\n')
+                     + ' SIP/2.0\r\n' + 'Expires: ' + OPCION + '\r\n\r\n')
                 print("Enviando:", line)
                 my_socket.send(bytes(line, 'utf-8'))
                 data = my_socket.recv(1024)
                 print('Recibido -- ', data.decode('utf-8')) 
                 if 'nonce' in data.decode('utf-8'):
                     nonce=data.decode('utf-8').split()[-1].split('=')[-1]
-                    m= hashlib.sha224(bytes(nonce)).hexdigest()
-                    
+                    m= hashlib.sha224(bytes(nonce,'utf-8')).hexdigest()
                     print(nonce)  
                     print(m)
+                    line = (
+                         'REGISTER sip:' + DIC_CONFIG['account_username'] + ':' + '1234'
+                         + ' SIP/2.0\r\n' + 'Expires: ' + OPCION + '\r\n'+ 'Authorization: Digest response=' + 'response' +'\r\n\r\n')
+                    print("Enviando:", line)
+                    my_socket.send(bytes(line, 'utf-8'))
+                    data = my_socket.recv(1024)
+                    print('Recibido -- ', data.decode('utf-8'))                     
+
+                
 
 
             if METODO == 'INVITE' or METODO == 'BYE':

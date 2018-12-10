@@ -19,14 +19,14 @@ class SIPHandler(socketserver.DatagramRequestHandler):
             linea_decod = line.decode('utf-8').split(" ")
             print(linea_decod)
             METODO = linea_decod[0]
-            if (len(linea_decod) != 4 or 'sip:' not in linea_decod[1] or
+            if METODO == 'REGISTER':
+                self.wfile.write(b"SIP/2.0 401 Unauthorized\r\nWWW Authenticate: Digest "
+                + b"nonce='898989898798989898989'\r\n\r\n")
+                if ('sip:' not in linea_decod[1] or
                     '@' not in linea_decod[1] or
                     'SIP/2.0' not in linea_decod[2]):
                     self.wfile.write(b"SIP/2.0 400 Bad Request\r\n\r\n")
                     break
-            if METODO == 'REGISTER':
-                self.wfile.write(b"SIP/2.0 401 Unauthorized\r\nWWW Authenticate: Digest "
-                + b"nonce='898989898798989898989'\r\n\r\n")
                 break
 
 
@@ -39,8 +39,8 @@ if __name__ == "__main__":
         leerxml = XML(fichero)
         DIC_CONFIG= XML.get_diccionario(leerxml)
         
-        leerxmlpasswd = XML('passwd.xml')
-        DIC_USERS = XML.get_diccionario(leerxmlpasswd)
+        #leerxmlpasswd = XML('passwd.xml')
+        #DIC_USERS = XML.get_diccionario(leerxmlpasswd)
         
         print(DIC_CONFIG)
         print(DIC_CONFIG['server_name'])
