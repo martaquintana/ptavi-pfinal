@@ -5,6 +5,7 @@ import sys
 import socket
 from xml.sax import make_parser
 from xml.sax.handler import ContentHandler
+import hashlib
 
 class XMLHandler(ContentHandler):
 
@@ -16,7 +17,11 @@ class XMLHandler(ContentHandler):
             "rtpaudio": ['puerto'],
             "regproxy": ['ip', 'puerto'],
             "log": ['path'],
-            "audio": ['path']
+            "audio": ['path'],
+            "server":['name','ip', 'puerto'],
+            "database":['path','passwdpath'],
+            "account1":['username','passwd'],
+            "account2":['username','passwd'],
             }
         self.dic_config = {}
 
@@ -58,7 +63,7 @@ if __name__ == "__main__":
         
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as my_socket:
             my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            my_socket.connect((DIC_CONFIG['uaserver_ip'], int(DIC_CONFIG['uaserver_puerto'])))
+            my_socket.connect((DIC_CONFIG['regproxy_ip'], int(DIC_CONFIG['regproxy_puerto'])))
             print(METODO)
             if METODO == 'REGISTER':
                 print("asdfas")
@@ -68,8 +73,15 @@ if __name__ == "__main__":
                 print("Enviando:", line)
                 my_socket.send(bytes(line, 'utf-8'))
                 data = my_socket.recv(1024)
-                print('Recibido -- ', data.decode('utf-8'))
-				
+                print('Recibido -- ', data.decode('utf-8')) 
+                if 'nonce' in data.decode('utf-8'):
+                    nonce=data.decode('utf-8').split()[-1].split('=')[-1]
+                    m= hashlib.sha224(bytes(nonce)).hexdigest()
+                    
+                    print(nonce)  
+                    print(m)
+
+
             if METODO == 'INVITE' or METODO == 'BYE':
                 line = (METODO + ' sip:' + DIC_CONFIG['account_username'] + ' SIP/2.0\r\n\r\n')
                 print(line)
@@ -78,7 +90,7 @@ if __name__ == "__main__":
                 print(data.decode('utf-8'))
                 if METODO == 'INVITE':
                      line = ('Content-Type:' + ' application/sdp\r\n' + 'v=0\r\n'
-							+ 'o=' + DIC_CONFIG['account_username'] + DIC_CONFIG['uaserver_ip']+ '\r\n'
+							+ 'o=' + DIC_CONFIG['account_username'] + DIC_CONFIG['regproxy_ip']+ '\r\n'
 							+ 's= misesion\r\n' + 't=0' + 'm=audio ' + DIC_CONFIG['rtpaudio_puerto']+ ' RTP\r\n')
                      print("Enviando:", line)
                      my_socket.send(bytes(line, 'utf-8'))
