@@ -3,6 +3,7 @@
 
 import sys
 import socketserver
+import json
 from uaclient import XMLHandler
 from uaclient import XML
 from xml.sax import make_parser
@@ -10,17 +11,25 @@ from xml.sax.handler import ContentHandler
 
 class SIPHandler(socketserver.DatagramRequestHandler):
     """SIP server class."""
-                
+    def register2json(self):
+        """JSON file."""
+     #   json.dump(self.dic_registrados, open(DIC_CONFIG['database_path'], 'w'))
+
+    def json2register(self):
+        """Open JSON file and gets the dictionary."""
+      #  with open(DIC_CONFIG['database_passwdpath'], 'r') as fich:
+      #      self.dic_clients = json.load(fich)
+                      
     def handle(self):
         """Contesta a los diferentes metodos SIP que le manda el cliente."""
         while 1:
             # Leyendo línea a línea lo que nos envía el cliente
             line = self.rfile.read()
             linea_decod = line.decode('utf-8').split(" ")
-            print(linea_decod)
+            print(linea_decod[3])
             METODO = linea_decod[0]
             if METODO == 'REGISTER':
-                self.wfile.write(b"SIP/2.0 401 Unauthorized\r\nWWW Authenticate: Digest "
+                self.wfile.write(b"SIP/2.0 401 Unauthorized\r\n" + b"WWW Authenticate: Digest"
                 + b"nonce='898989898798989898989'\r\n\r\n")
                 if ('sip:' not in linea_decod[1] or
                     '@' not in linea_decod[1] or
@@ -28,6 +37,13 @@ class SIPHandler(socketserver.DatagramRequestHandler):
                     self.wfile.write(b"SIP/2.0 400 Bad Request\r\n\r\n")
                     break
                 break
+            if 'Authorization' in linea_decod[3] :
+                print ("Weeee")
+            
+        print("Nuevo usuario registrado")
+        self.register2json()
+
+
 
 
 if __name__ == "__main__":
@@ -38,12 +54,12 @@ if __name__ == "__main__":
         fichero = sys.argv[1]
         leerxml = XML(fichero)
         DIC_CONFIG= XML.get_diccionario(leerxml)
-        
-        #leerxmlpasswd = XML('passwd.xml')
-        #DIC_USERS = XML.get_diccionario(leerxmlpasswd)
+        with open(DIC_CONFIG['database_passwdpath'], 'r') as file_json:
+            dic_users = json.load(file_json)
+            print (dic_users)
         
         print(DIC_CONFIG)
-        print(DIC_CONFIG['server_name'])
+        #print(DIC_CONFIG['server_name'])
         serv = socketserver.UDPServer((DIC_CONFIG['server_ip'], int(DIC_CONFIG['server_puerto']) ), SIPHandler)
         print("Server MiServidorBigBang listening at port 5555...")
         try:
