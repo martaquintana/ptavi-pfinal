@@ -45,13 +45,13 @@ class SIPHandler(socketserver.DatagramRequestHandler):
             
             print(linea_decod)
             METODO = linea_decod[0]
-            client_sip = linea_decod[1].split(":")
-            sip_address = client_sip[1]
-            self.dic_clients[sip_address] = {
+            if METODO == 'REGISTER':
+                client_sip = linea_decod[1].split(":")
+                sip_address = client_sip[1]
+                self.dic_clients[sip_address] = {
                                      "address": self.client_address[0],
                                      "port": self.client_address[1]
-                                     }
-            if METODO == 'REGISTER':
+                                     }				
                 self.json2register()
                 self.wfile.write(b"SIP/2.0 401 Unauthorized\r\n" + b"WWW Authenticate: Digest"
                 + b"nonce='898989898798989898989'\r\n\r\n")
@@ -74,7 +74,15 @@ class SIPHandler(socketserver.DatagramRequestHandler):
                         del self.dic_clients[sip_address]
                     else:
                         self.whohasexpired()
-                       
+
+                elif metodo == "INVITE":
+                    print(line_decod[0])
+					# mirar a quién invitan en el diccionario de registrados
+					# abrirle un socket
+					# enviarle lo que he recibido con send
+					# recibir respuesta con recv
+					# enviar respuesta al otro lado con write
+					
             print("Nuevo usuario registrado")
             self.register2json()
             print(self.dic_clients)
