@@ -8,27 +8,51 @@ from uaclient import XMLHandler
 from uaclient import XML
 from xml.sax import make_parser
 from xml.sax.handler import ContentHandler
+import time
 
 class SIPHandler(socketserver.DatagramRequestHandler):
     """SIP server class."""
+    
+    dic_registrados = {}
+    dic_clients = {}
+    expires ='0'
+   
     def register2json(self):
         """JSON file."""
-     #   json.dump(self.dic_registrados, open(DIC_CONFIG['database_path'], 'w'))
+        json.dump(self.dic_clients, open(DIC_CONFIG['database_path'], 'w'))
 
     def json2register(self):
         """Open JSON file and gets the dictionary."""
-      #  with open(DIC_CONFIG['database_passwdpath'], 'r') as fich:
-      #      self.dic_clients = json.load(fich)
-                      
+        with open(DIC_CONFIG['database_passwdpath'], 'r') as fich:
+             self.dic_registrados = json.load(fich)
+    def whohasexpired(self):
+        """Search and delete the clients expired."""
+        del_list = []
+        now = time.strftime(
+                            '%Y-%m-%d %H:%M:%S', time.gmtime(time.time()))
+        for clients in self.dic_clients:
+            if self.dic_clients[clients]["expires"] <= now:
+                del_list.append(clients)
+        for clients in del_list:
+            del self.dic_clients[clients]
+
     def handle(self):
         """Contesta a los diferentes metodos SIP que le manda el cliente."""
         while 1:
             # Leyendo línea a línea lo que nos envía el cliente
             line = self.rfile.read()
-            linea_decod = line.decode('utf-8').split(" ")
-            print(linea_decod[3])
+            linea_decod = line.decode('utf-8').split()
+            
+            print(linea_decod)
             METODO = linea_decod[0]
+            client_sip = linea_decod[1].split(":")
+            sip_address = client_sip[1]
+            self.dic_clients[sip_address] = {
+                                     "address": self.client_address[0],
+                                     "port": self.client_address[1]
+                                     }
             if METODO == 'REGISTER':
+                self.json2register()
                 self.wfile.write(b"SIP/2.0 401 Unauthorized\r\n" + b"WWW Authenticate: Digest"
                 + b"nonce='898989898798989898989'\r\n\r\n")
                 if ('sip:' not in linea_decod[1] or
@@ -36,14 +60,26 @@ class SIPHandler(socketserver.DatagramRequestHandler):
                     'SIP/2.0' not in linea_decod[2]):
                     self.wfile.write(b"SIP/2.0 400 Bad Request\r\n\r\n")
                     break
-                break
-            if 'Authorization' in linea_decod[3] :
-                print ("Weeee")
+                
+                if linea_decod[3] == 'Expires:':
+                    print("HEEEY")
+                    expires = linea_decod[4]
+                    print(expires)
+                    then = time.strftime(
+                           '%Y-%m-%d %H:%M:%S', time.gmtime(
+                                  time.time() + float((expires))))
+                    print (then)
+                    self.dic_clients[sip_address]["expires"] = then
+                    if expires == '0':
+                        del self.dic_clients[sip_address]
+                    else:
+                        self.whohasexpired()
+                       
+            print("Nuevo usuario registrado")
+            self.register2json()
+            print(self.dic_clients)
             
-        print("Nuevo usuario registrado")
-        self.register2json()
-
-
+            break
 
 
 if __name__ == "__main__":
