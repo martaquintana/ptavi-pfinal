@@ -95,17 +95,18 @@ if __name__ == "__main__":
 
 
             if METODO == 'INVITE' or METODO == 'BYE':
-                line = (METODO + ' sip:' + sys.argv[-1] + ' SIP/2.0\r\n\r\n')
-                print(line)
-                my_socket.send(bytes(line, 'utf-8'))
-                data = my_socket.recv(1024)
-                data_list += data.decode('utf-8')
-                print(data.decode('utf-8'))
+                if METODO=='BYE':
+                     line = (METODO + ' sip:' + sys.argv[-1] + ' SIP/2.0\r\n')
+                     print(line)
+                     my_socket.send(bytes(line, 'utf-8'))
+                     data = my_socket.recv(1024)
+                     print('Recibido -- ', data.decode('utf-8'))
+                     
                 if METODO == 'INVITE':
-                     line = ('Content-Type:' + ' application/sdp\r\n' + 'v=0\r\n'
+                     line = (METODO + ' sip:' + sys.argv[-1] + ' SIP/2.0\r\n' + 'Content-Type:' + ' application/sdp\r\n' + 'v=0\r\n'
 							+ 'o=' + DIC_CONFIG['account_username'] +' '+ DIC_CONFIG['regproxy_ip']+ '\r\n'
 							+ 's= misesion\r\n' + 't=0\r\n' + 'm=audio ' + DIC_CONFIG['rtpaudio_puerto']+ ' RTP\r\n')
-                     print("Enviando:", line)
+                     print(line)
                      my_socket.send(bytes(line, 'utf-8'))
                      data = my_socket.recv(1024)
                      data_list += data.decode('utf-8')
