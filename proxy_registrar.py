@@ -3,6 +3,7 @@
 
 import sys
 import socketserver
+import socket
 import json
 from uaclient import XMLHandler
 from uaclient import XML
@@ -77,18 +78,27 @@ class SIPHandler(socketserver.DatagramRequestHandler):
                         del self.dic_clients[sip_address]
                     else:
                         self.whohasexpired()
-            """HACERRRR
-            if METODO == "INVITE":
-               if user in self.dic_registrados:
-                   with socket.socket(socket.AF_INET,socket.SOCK_DGRAM) as my_socket:
+            
+            if METODO == "INVITE" or METODO == "BYE" or METODO == "ACK":
+               user = linea_decod[1].split(":")[1]
+               print (user)
+               if user in self.dic_clients:
+                   print("si!! el usuario está registrado")
+                   with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as my_socket:
                        my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-                       my_socket.connect(""Ip_user"", puerto )
-					# mirar a quién invitan en el diccionario de registrados
+                       my_socket.connect((self.dic_clients[user]["address"], 6001) )
+                       #print (self.dic_clients[user]["address"],int(self.dic_clients[user]["port"]) )
+                       send_message =line
+                       my_socket.send(send_message)
+                       recv_message = my_socket.recv(1024)
+                       self.wfile.write(recv_message)
+                   
+					# mirar a quién invitan en el diccionario de registrados SII
 					# abrirle un socket
 					# enviarle lo que he recibido con send
 					# recibir respuesta con recv
 					# enviar respuesta al otro lado con write
-			"""		
+            
             print("Nuevo usuario registrado")
             self.register2json()
             print(self.dic_clients)
