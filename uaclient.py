@@ -61,6 +61,8 @@ if __name__ == "__main__":
         print(DIC_CONFIG)
         print(DIC_CONFIG['account_username'])
         
+        data_list = []
+        
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as my_socket:
             my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             my_socket.connect((DIC_CONFIG['regproxy_ip'], int(DIC_CONFIG['regproxy_puerto'])))
@@ -73,6 +75,7 @@ if __name__ == "__main__":
                 print("Enviando:", line)
                 my_socket.send(bytes(line, 'utf-8'))
                 data = my_socket.recv(1024)
+                data_list += data.decode('utf-8')
                 print('Recibido -- ', data.decode('utf-8')) 
                 if 'nonce' in data.decode('utf-8'):
                     nonce=data.decode('utf-8').split()[-1].split('=')[-1]
@@ -85,6 +88,7 @@ if __name__ == "__main__":
                     print("Enviando:", line)
                     my_socket.send(bytes(line, 'utf-8'))
                     data = my_socket.recv(1024)
+                    data_list += data.decode('utf-8')
                     print('Recibido -- ', data.decode('utf-8'))                     
 
                 
@@ -95,23 +99,28 @@ if __name__ == "__main__":
                 print(line)
                 my_socket.send(bytes(line, 'utf-8'))
                 data = my_socket.recv(1024)
+                data_list += data.decode('utf-8')
                 print(data.decode('utf-8'))
                 if METODO == 'INVITE':
                      line = ('Content-Type:' + ' application/sdp\r\n' + 'v=0\r\n'
-							+ 'o=' + DIC_CONFIG['account_username'] + DIC_CONFIG['regproxy_ip']+ '\r\n'
+							+ 'o=' + DIC_CONFIG['account_username'] +' '+ DIC_CONFIG['regproxy_ip']+ '\r\n'
 							+ 's= misesion\r\n' + 't=0\r\n' + 'm=audio ' + DIC_CONFIG['rtpaudio_puerto']+ ' RTP\r\n')
                      print("Enviando:", line)
                      my_socket.send(bytes(line, 'utf-8'))
                      data = my_socket.recv(1024)
+                     data_list += data.decode('utf-8')
                      print('Recibido -- ', data.decode('utf-8'))
             elif METODO != ('REGISTER' or 'INVITE' or 'BYE'):
                 print("Solo puedes enviar Métodos REGISTER, INVITE o BYE")
 
-            if METODO == 'INVITE' and data.decode('utf-8').split()[-2] == '200':
+            DATOS= ''.join(data_list)
+            if METODO == 'INVITE' and DATOS.split()[-2] == '200':
                 linea = ('ACK' + ' sip:' + DIC_CONFIG['account_username'] + ' SIP/2.0\r\n\r\n')
                 my_socket.send(bytes(linea, 'utf-8'))
                 data = my_socket.recv(1024)
+                data_list += data.decode('utf-8')
                 print(data.decode('utf-8'))
+        
         print("Socket terminado.")
 
     except (IndexError, ValueError or len(sys.argv)< 3):
