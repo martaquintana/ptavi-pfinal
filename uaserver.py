@@ -18,6 +18,7 @@ class SIPHandler(socketserver.DatagramRequestHandler):
             # Leyendo línea a línea lo que nos envía el cliente
             line = self.rfile.read()
             linea_decod = line.decode('utf-8').split(" ")
+            print(linea_decod)
             if ('sip:' not in linea_decod[1] or
                     '@' not in linea_decod[1] or
                     'SIP/2.0' not in linea_decod[2]):
@@ -35,8 +36,9 @@ class SIPHandler(socketserver.DatagramRequestHandler):
                 aEjecutar = 'mp32rtp -i DIC_CONFIG["uaserver_ip"] -p DIC_CONFIG["rtpaudio_puerto"] < ' + DIC_CONFIG["audio_path"]
                 print("Vamos a ejecutar", aEjecutar)
                 os.system(aEjecutar)
-                self.wfile.write(b"cancion.mp3 enviada")
+                self.wfile.write(b"cancion.mp3 enviada desde servidor")
                 break
+                #REVISAR PUERTOS! LEER SDP o dejarlo con lo de la configuracion porque es igual??
 
             if metodo == 'BYE':
                 self.wfile.write(b"SIP/2.0 200 OK\r\n\r\n")

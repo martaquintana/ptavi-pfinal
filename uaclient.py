@@ -121,13 +121,12 @@ if __name__ == "__main__":
                 linea = ('ACK' + ' sip:' + DIC_CONFIG['account_username'] + ' SIP/2.0\r\n\r\n')
                 my_socket.send(bytes(linea, 'utf-8'))
                 data = my_socket.recv(1024)
-                data_list += data.decode('utf-8')
-                print(data)
+                print(data.decode('utf-8'))
+                #LEER SDP QUE MANDE EL SEVER; VER PUERTOS¿?
                 aEjecutar = 'mp32rtp -i DIC_CONFIG["uaserver_ip"] -p DIC_CONFIG["rtpaudio_puerto"] < ' + DIC_CONFIG["audio_path"]
                 print("Vamos a ejecutar", aEjecutar)
                 os.system(aEjecutar)
-                line = "ENVIANDO CANCION MP3"
-                my_socket.send(bytes(linea, 'utf-8'))
+                print("Cancion enviada desde cliente")
         
         print("Socket terminado.")
 
