@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import sys
+import os
 import socketserver
 from uaclient import XMLHandler
 from uaclient import XML
@@ -32,7 +33,7 @@ class SIPHandler(socketserver.DatagramRequestHandler):
                 break
 
             if metodo == 'ACK':
-                aEjecutar = 'mp32rtp -i 127.0.0.1 -p 23032 < ' + sys.argv[3]
+                aEjecutar = 'mp32rtp -i DIC_CONFIG["uaserver_ip"] -p DIC_CONFIG["rtpaudio_puerto"] < ' + DIC_CONFIG["audio_path"]
                 print("Vamos a ejecutar", aEjecutar)
                 os.system(aEjecutar)
                 self.wfile.write(b"cancion.mp3 enviada")

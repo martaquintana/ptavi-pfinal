@@ -6,6 +6,7 @@ import socket
 from xml.sax import make_parser
 from xml.sax.handler import ContentHandler
 import hashlib
+import os
 
 class XMLHandler(ContentHandler):
 
@@ -46,7 +47,7 @@ class XML:
     def get_diccionario(self):
         return self.DIC_CONFIG
 
-        
+
 if __name__ == "__main__":
     """
     Programa principal
@@ -121,6 +122,11 @@ if __name__ == "__main__":
                 data = my_socket.recv(1024)
                 data_list += data.decode('utf-8')
                 print(data.decode('utf-8'))
+                aEjecutar = 'mp32rtp -i DIC_CONFIG["uaserver_ip"] -p DIC_CONFIG["rtpaudio_puerto"] < ' + DIC_CONFIG["audio_path"]
+                print("Vamos a ejecutar", aEjecutar)
+                os.system(aEjecutar)
+                line = "ENVIANDO CANCION MP3"
+                my_socket.send(bytes(line, 'utf-8'))
         
         print("Socket terminado.")
 
