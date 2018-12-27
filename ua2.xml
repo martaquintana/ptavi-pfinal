@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <config>
 	<account username="penny@cheesecake.net" passwd="KaleyCuoco"></account>
-	<uaserver ip="127.0.0.1" puerto="6001"></uaserver>
+	<uaserver ip="127.0.0.1" puerto="7001"></uaserver>
 	<rtpaudio puerto="5060"></rtpaudio>
 	<regproxy ip="127.0.0.1" puerto="6002"></regproxy>
 	<log path="ua2log.txt"></log>

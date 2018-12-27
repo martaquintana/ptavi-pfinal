@@ -18,7 +18,6 @@ class SIPHandler(socketserver.DatagramRequestHandler):
             # Leyendo línea a línea lo que nos envía el cliente
             line = self.rfile.read()
             linea_decod = line.decode('utf-8').split(" ")
-            print(linea_decod[0])
             if ('sip:' not in linea_decod[1] or
                     '@' not in linea_decod[1] or
                     'SIP/2.0' not in linea_decod[2]):
@@ -63,7 +62,7 @@ if __name__ == "__main__":
         print(DIC_CONFIG)
         print(DIC_CONFIG['account_username'])
         serv = socketserver.UDPServer((DIC_CONFIG['uaserver_ip'], int(DIC_CONFIG['uaserver_puerto']) ), SIPHandler)
-        print("Listening...")
+        print("Listening at port "+ DIC_CONFIG['uaserver_puerto']  +"...")
         try:
             serv.serve_forever()
         except KeyboardInterrupt:

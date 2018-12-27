@@ -2,11 +2,11 @@
 # -*- coding: utf-8 -*-
 
 import sys
+import os
 import socket
 from xml.sax import make_parser
 from xml.sax.handler import ContentHandler
 import hashlib
-import os
 
 class XMLHandler(ContentHandler):
 
@@ -71,7 +71,7 @@ if __name__ == "__main__":
             if METODO == 'REGISTER':
                 print("asdfas")
                 line = (
-                    'REGISTER sip:' + DIC_CONFIG['account_username'] + ':' + '1234'
+                    'REGISTER sip:' + DIC_CONFIG['account_username'] + ':' + DIC_CONFIG['uaserver_puerto']
                      + ' SIP/2.0\r\n' + 'Expires: ' + OPCION + '\r\n\r\n')
                 print("Enviando:", line)
                 my_socket.send(bytes(line, 'utf-8'))
@@ -84,7 +84,7 @@ if __name__ == "__main__":
                     print(nonce)  
                     print(m)
                     line = (
-                         'REGISTER sip:' + DIC_CONFIG['account_username'] + ':' + '1234'
+                         'REGISTER sip:' + DIC_CONFIG['account_username'] + ':' + DIC_CONFIG['uaserver_puerto']
                          + ' SIP/2.0\r\n' + 'Expires: ' + OPCION + '\r\n'+ 'Authorization: Digest response=' + 'response' +'\r\n\r\n')
                     print("Enviando:", line)
                     my_socket.send(bytes(line, 'utf-8'))
@@ -117,16 +117,17 @@ if __name__ == "__main__":
 
             DATOS= ''.join(data_list)
             if METODO == 'INVITE' and DATOS.split()[-2] == '200':
+                print ("entra en ACK")
                 linea = ('ACK' + ' sip:' + DIC_CONFIG['account_username'] + ' SIP/2.0\r\n\r\n')
                 my_socket.send(bytes(linea, 'utf-8'))
                 data = my_socket.recv(1024)
                 data_list += data.decode('utf-8')
-                print(data.decode('utf-8'))
+                print(data)
                 aEjecutar = 'mp32rtp -i DIC_CONFIG["uaserver_ip"] -p DIC_CONFIG["rtpaudio_puerto"] < ' + DIC_CONFIG["audio_path"]
                 print("Vamos a ejecutar", aEjecutar)
                 os.system(aEjecutar)
                 line = "ENVIANDO CANCION MP3"
-                my_socket.send(bytes(line, 'utf-8'))
+                my_socket.send(bytes(linea, 'utf-8'))
         
         print("Socket terminado.")
 

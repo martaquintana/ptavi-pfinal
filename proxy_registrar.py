@@ -17,6 +17,7 @@ class SIPHandler(socketserver.DatagramRequestHandler):
     dic_registrados = {}
     dic_clients = {}
     expires ='0'
+    user_invited= []
    
     def register2json(self):
         """JSON file."""
@@ -49,9 +50,11 @@ class SIPHandler(socketserver.DatagramRequestHandler):
             if METODO == 'REGISTER':
                 client_sip = linea_decod[1].split(":")
                 sip_address = client_sip[1]
+                port = client_sip[-1]
+                print ("AQUIIIIIIIII",port)
                 self.dic_clients[sip_address] = {
                                      "address": self.client_address[0],
-                                     "port": self.client_address[1],
+                                     "port": port,
                                      
                                      }				
                 self.json2register()
@@ -79,18 +82,22 @@ class SIPHandler(socketserver.DatagramRequestHandler):
                     else:
                         self.whohasexpired()
             
+            if METODO == "INVITE":
+               self.user_invited.append(linea_decod[1].split(":")[1])
+                        
             if METODO == "INVITE" or METODO == "BYE" or METODO == "ACK":
-               user = linea_decod[1].split(":")[1]
-               print (user)
+               user = self.user_invited[0]
+               print(user)
                if user in self.dic_clients:
                    print("si!! el usuario está registrado")
                    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as my_socket:
                        my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-                       my_socket.connect((self.dic_clients[user]["address"], 6001) )
-                       #print (self.dic_clients[user]["address"],int(self.dic_clients[user]["port"]) )
+                       my_socket.connect((self.dic_clients[user]["address"], int(self.dic_clients[user]["port"])) )
                        send_message =line
+                       print (send_message)
                        my_socket.send(send_message)
                        recv_message = my_socket.recv(1024)
+                       print(recv_message)
                        self.wfile.write(recv_message)
                    
 					# mirar a quién invitan en el diccionario de registrados SII
@@ -121,7 +128,7 @@ if __name__ == "__main__":
         print(DIC_CONFIG)
         #print(DIC_CONFIG['server_name'])
         serv = socketserver.UDPServer((DIC_CONFIG['server_ip'], int(DIC_CONFIG['server_puerto']) ), SIPHandler)
-        print("Server MiServidorBigBang listening at port 5555...")
+        print("Server MiServidorBigBang listening at port "+ DIC_CONFIG['server_puerto']  +"...")
         try:
             serv.serve_forever()
         except KeyboardInterrupt:
