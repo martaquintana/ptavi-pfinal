@@ -27,6 +27,7 @@ class SIPHandler(socketserver.DatagramRequestHandler):
         """Open JSON file and gets the dictionary."""
         with open(DIC_CONFIG['database_passwdpath'], 'r') as fich:
              self.dic_registrados = json.load(fich)
+        print(self.dic_registrados)
     def whohasexpired(self):
         """Search and delete the clients expired."""
         del_list = []
@@ -44,7 +45,6 @@ class SIPHandler(socketserver.DatagramRequestHandler):
             # Leyendo línea a línea lo que nos envía el cliente
             line = self.rfile.read()
             linea_decod = line.decode('utf-8').split()
-            
             print(linea_decod)
             METODO = linea_decod[0]
             if METODO == 'REGISTER':
@@ -58,7 +58,7 @@ class SIPHandler(socketserver.DatagramRequestHandler):
                                      
                                      }				
                 self.json2register()
-                self.wfile.write(b"SIP/2.0 401 Unauthorized\r\n" + b"WWW Authenticate: Digest"
+                self.wfile.write(b"SIP/2.0 401 Unauthorized\r\n" + b"WWW Authenticate: Digest "
                 + b"nonce='898989898798989898989'\r\n\r\n")
                 if ('sip:' not in linea_decod[1] or
                     '@' not in linea_decod[1] or
@@ -85,7 +85,8 @@ class SIPHandler(socketserver.DatagramRequestHandler):
             if METODO == "INVITE":
                self.user_invited.append(linea_decod[1].split(":")[1])
                         
-            if METODO == "INVITE" or METODO == "BYE" or METODO == "ACK":
+            if METODO != "REGISTER":
+               #EL PROXY TODO LO QUE LE LLEGA LO MANDA Y EL SERVER CONTESTA con los errores
                user = self.user_invited[0]
                print(user)
                if user in self.dic_clients:
@@ -108,8 +109,6 @@ class SIPHandler(socketserver.DatagramRequestHandler):
                else:
                    self.wfile.write(b"SIP/2.0 404 User Not Found\r\n\r\n")
                    break
-            else:
-                self.wfile.write(b"SIP/2.0 405 Method Not Allowed\r\n\r\n")
             print("Nuevo usuario registrado")
             self.register2json()
             print(self.dic_clients)
@@ -127,10 +126,6 @@ if __name__ == "__main__":
         DIC_CONFIG= XML.get_diccionario(leerxml)
         if DIC_CONFIG['server_ip'] == '':
             DIC_CONFIG['server_ip'] = '127.0.0.1'
-        with open(DIC_CONFIG['database_passwdpath'], 'r') as file_json:
-            dic_users = json.load(file_json)
-            print (dic_users)
-        
         print(DIC_CONFIG)
         #print(DIC_CONFIG['server_name'])
         serv = socketserver.UDPServer((DIC_CONFIG['server_ip'], int(DIC_CONFIG['server_puerto']) ), SIPHandler)
