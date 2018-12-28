@@ -13,7 +13,6 @@ class SIPHandler(socketserver.DatagramRequestHandler):
     """SIP server class."""
     receptor = []
     def handle(self):
-        """Contesta a los diferentes metodos SIP que le manda el cliente."""
         while 1:
             # Leyendo línea a línea lo que nos envía el cliente
             line = self.rfile.read()
@@ -33,6 +32,11 @@ class SIPHandler(socketserver.DatagramRequestHandler):
                 self.wfile.write(b"SIP/2.0 100 Trying\r\n\r\n")
                 self.wfile.write(b"SIP/2.0 180 Ringing\r\n\r\n")
                 self.wfile.write(b"SIP/2.0 200 OK\r\n\r\n")
+                sdp = ('Content-Type: application/sdp\r\n\r\n' + 'v=0\r\n' +
+                         'o=' + DIC_CONFIG['account_username'] + ' ' + DIC_CONFIG['uaserver_ip'] +
+                         '\r\n' + 's=misesion\r\n' + 't=0\r\n' + 'm=audio ' +
+                         DIC_CONFIG['rtpaudio_puerto'] + ' RTP\r\n')
+                self.wfile.write(bytes(sdp,"utf-8"))
                 break
 
             if metodo == 'ACK':
@@ -54,7 +58,7 @@ class SIPHandler(socketserver.DatagramRequestHandler):
                 self.wfile.write(b"SIP/2.0 200 OK\r\n\r\n")
                 break
 
-            else:
+            if metodo != 'INVITE' or metodo != 'BYE' or metodo != 'ACK':
                 self.wfile.write(b"SIP/2.0 405 Method Not Allowed\r\n\r\n")
                 break
             # Si no hay más líneas salimos del bucle infinito
