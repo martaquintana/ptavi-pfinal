@@ -105,7 +105,11 @@ class SIPHandler(socketserver.DatagramRequestHandler):
 					# enviarle lo que he recibido con send
 					# recibir respuesta con recv
 					# enviar respuesta al otro lado con write
-            
+               else:
+                   self.wfile.write(b"SIP/2.0 404 User Not Found\r\n\r\n")
+                   break
+            else:
+                self.wfile.write(b"SIP/2.0 405 Method Not Allowed\r\n\r\n")
             print("Nuevo usuario registrado")
             self.register2json()
             print(self.dic_clients)
@@ -121,6 +125,8 @@ if __name__ == "__main__":
         fichero = sys.argv[1]
         leerxml = XML(fichero)
         DIC_CONFIG= XML.get_diccionario(leerxml)
+        if DIC_CONFIG['server_ip'] == '':
+            DIC_CONFIG['server_ip'] = '127.0.0.1'
         with open(DIC_CONFIG['database_passwdpath'], 'r') as file_json:
             dic_users = json.load(file_json)
             print (dic_users)
@@ -134,6 +140,6 @@ if __name__ == "__main__":
         except KeyboardInterrupt:
             print("Finalizado servidor")
     except (IndexError, ValueError, PermissionError or len(sys.argv)< 2):
-        print("Usage: phython3 uaserver.py ua2.xml")
+        print("Usage: phython3 proxy_registrar.py config")
 
    
