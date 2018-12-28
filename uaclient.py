@@ -76,8 +76,8 @@ if __name__ == "__main__":
                 print("Enviando:", line)
                 my_socket.send(bytes(line, 'utf-8'))
                 data = my_socket.recv(1024)
-                data_list += data.decode('utf-8')
                 print('Recibido -- ', data.decode('utf-8')) 
+                """
                 if 'nonce' in data.decode('utf-8'):
                     nonce=data.decode('utf-8').split()[-1].split('=')[-1]
                     m= hashlib.sha224(bytes(nonce,'utf-8')).hexdigest()
@@ -89,9 +89,8 @@ if __name__ == "__main__":
                     print("Enviando:", line)
                     my_socket.send(bytes(line, 'utf-8'))
                     data = my_socket.recv(1024)
-                    data_list += data.decode('utf-8')
                     print('Recibido -- ', data.decode('utf-8'))                     
-
+                """
                 
 
 
@@ -105,7 +104,7 @@ if __name__ == "__main__":
                      
                 if METODO == 'INVITE':
                      line = (METODO + ' sip:' + sys.argv[-1] + ' SIP/2.0\r\n' + 'Content-Type:' + ' application/sdp\r\n' + 'v=0\r\n'
-							+ 'o=' + DIC_CONFIG['account_username'] +' '+ DIC_CONFIG['regproxy_ip']+ '\r\n'
+							+ 'o=' + DIC_CONFIG['account_username'] +' '+ DIC_CONFIG['uaserver_ip']+ '\r\n'
 							+ 's= misesion\r\n' + 't=0\r\n' + 'm=audio ' + DIC_CONFIG['rtpaudio_puerto']+ ' RTP\r\n')
                      print(line)
                      my_socket.send(bytes(line, 'utf-8'))
@@ -116,16 +115,23 @@ if __name__ == "__main__":
                 print("Solo puedes enviar Métodos REGISTER, INVITE o BYE")
 
             DATOS= ''.join(data_list)
-            if METODO == 'INVITE' and DATOS.split()[-2] == '200':
+            print(DATOS.split())
+            if METODO == 'INVITE' and DATOS.split()[7] == '200':
                 print ("entra en ACK")
                 linea = ('ACK' + ' sip:' + DIC_CONFIG['account_username'] + ' SIP/2.0\r\n\r\n')
                 my_socket.send(bytes(linea, 'utf-8'))
                 data = my_socket.recv(1024)
-                print(data.decode('utf-8'))
+                print("ESTO MANDA EL SERVER",data.decode('utf-8'))
                 #LEER SDP QUE MANDE EL SEVER; VER PUERTOS¿?
-                aEjecutar = 'mp32rtp -i DIC_CONFIG["uaserver_ip"] -p DIC_CONFIG["rtpaudio_puerto"] < ' + DIC_CONFIG["audio_path"]
+                receptor_server_IP = DATOS.split()[13]
+                receptor_server_Puerto = DATOS.split()[17]
+                print(receptor_server_Puerto)
+                print(receptor_server_IP)
+                fichero_audio = DIC_CONFIG["audio_path"]
+                aEjecutar = "./mp32rtp -i " + receptor_server_IP + " -p " + receptor_server_Puerto
+                aEjecutar += " < " + fichero_audio
                 print("Vamos a ejecutar", aEjecutar)
-                os.system(aEjecutar)
+                os.system(aEjecutar)  
                 print("Cancion enviada desde cliente")
         
         print("Socket terminado.")
