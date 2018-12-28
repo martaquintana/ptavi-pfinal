@@ -11,7 +11,7 @@ from xml.sax.handler import ContentHandler
 
 class SIPHandler(socketserver.DatagramRequestHandler):
     """SIP server class."""
-
+    receptor = []
     def handle(self):
         """Contesta a los diferentes metodos SIP que le manda el cliente."""
         while 1:
@@ -27,15 +27,25 @@ class SIPHandler(socketserver.DatagramRequestHandler):
 
             metodo = linea_decod[0]
             if metodo == 'INVITE':
+                self.receptor.append(linea_decod[-4].split()[0])
+                self.receptor.append(linea_decod[-2])
+                print(self.receptor)
                 self.wfile.write(b"SIP/2.0 100 Trying\r\n\r\n")
                 self.wfile.write(b"SIP/2.0 180 Ringing\r\n\r\n")
                 self.wfile.write(b"SIP/2.0 200 OK\r\n\r\n")
                 break
 
             if metodo == 'ACK':
-                aEjecutar = 'mp32rtp -i DIC_CONFIG["uaserver_ip"] -p DIC_CONFIG["rtpaudio_puerto"] < ' + DIC_CONFIG["audio_path"]
+                # aEjecutar es un string con lo que se ha de ejecutar en la shell
+                receptor_IP = self.receptor[0]
+                receptor_Puerto = self.receptor[1]
+                print(receptor_Puerto)
+                print(receptor_IP)
+                fichero_audio = DIC_CONFIG["audio_path"]
+                aEjecutar = "./mp32rtp -i " + receptor_IP + " -p " + receptor_Puerto
+                aEjecutar += " < " + fichero_audio
                 print("Vamos a ejecutar", aEjecutar)
-                os.system(aEjecutar)
+                os.system(aEjecutar)  
                 self.wfile.write(b"cancion.mp3 enviada desde servidor")
                 break
                 #REVISAR PUERTOS! LEER SDP o dejarlo con lo de la configuracion porque es igual??
@@ -64,12 +74,12 @@ if __name__ == "__main__":
         print(DIC_CONFIG)
         print(DIC_CONFIG['account_username'])
         serv = socketserver.UDPServer((DIC_CONFIG['uaserver_ip'], int(DIC_CONFIG['uaserver_puerto']) ), SIPHandler)
-        print("Listening at port "+ DIC_CONFIG['uaserver_puerto']  +"...")
+        print("Listening...")
         try:
             serv.serve_forever()
         except KeyboardInterrupt:
             print("Finalizado servidor")
     except (IndexError, ValueError, PermissionError or len(sys.argv)< 2):
-        print("Usage: phython3 uaserver.py ua2.xml")
+        print("Usage: phython3 uaserver.py config")
 
    
