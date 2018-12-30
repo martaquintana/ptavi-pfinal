@@ -92,6 +92,7 @@ class SIPHandler(socketserver.DatagramRequestHandler):
             if METODO != "REGISTER":
                #EL PROXY TODO LO QUE LE LLEGA LO MANDA Y EL SERVER CONTESTA con los errores
                user = self.user_invited[0]
+               self.whohasexpired()
                print(user)
                if user in self.dic_clients:
                    print("si!! el usuario está registrado")
