@@ -106,7 +106,7 @@ class SIPHandler(socketserver.DatagramRequestHandler):
                        print(recv_message)
                        self.wfile.write(recv_message)
                    
-					# mirar a quién invitan en el diccionario de registrados SII
+					# mirar a quién invitan en el diccionario de registrados 
 					# abrirle un socket
 					# enviarle lo que he recibido con send
 					# recibir respuesta con recv
