@@ -34,7 +34,7 @@ class SIPHandler(socketserver.DatagramRequestHandler):
                 self.wfile.write(b"SIP/2.0 200 OK\r\n\r\n")
                 sdp = ('Content-Type: application/sdp\r\n\r\n' + 'v=0\r\n' +
                          'o=' + DIC_CONFIG['account_username'] + ' ' + DIC_CONFIG['uaserver_ip'] +
-                         '\r\n' + 's=misesion\r\n' + 't=0\r\n' + 'm=audio ' +
+                         '\r\n' + 's= Christmas\r\n' + 't=0\r\n' + 'm=audio ' +
                          DIC_CONFIG['rtpaudio_puerto'] + ' RTP\r\n')
                 self.wfile.write(bytes(sdp,"utf-8"))
                 break
