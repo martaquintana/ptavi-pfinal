@@ -76,8 +76,9 @@ if __name__ == "__main__":
                 print("Enviando:", line)
                 my_socket.send(bytes(line, 'utf-8'))
                 data = my_socket.recv(1024)
+                data_list += data.decode('utf-8')
                 print('Recibido -- ', data.decode('utf-8')) 
-                """
+
                 if 'nonce' in data.decode('utf-8'):
                     nonce=data.decode('utf-8').split()[-1].split('=')[-1]
                     m= hashlib.sha224(bytes(nonce,'utf-8')).hexdigest()
@@ -90,8 +91,7 @@ if __name__ == "__main__":
                     my_socket.send(bytes(line, 'utf-8'))
                     data = my_socket.recv(1024)
                     print('Recibido -- ', data.decode('utf-8'))                     
-                """
-                
+
 
 
             if METODO == 'INVITE' or METODO == 'BYE':

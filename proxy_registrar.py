@@ -51,15 +51,19 @@ class SIPHandler(socketserver.DatagramRequestHandler):
                 client_sip = linea_decod[1].split(":")
                 sip_address = client_sip[1]
                 port = client_sip[-1]
-                print ("AQUIIIIIIIII",port)
-                self.dic_clients[sip_address] = {
-                                     "address": self.client_address[0],
-                                     "port": port,
-                                     
-                                     }				
                 self.json2register()
-                self.wfile.write(b"SIP/2.0 401 Unauthorized\r\n" + b"WWW Authenticate: Digest "
-                + b"nonce='898989898798989898989'\r\n\r\n")
+                self.dic_clients[sip_address] = {
+                                        "address": self.client_address[0],
+                                        "port": port,
+                                        
+                                        }	
+
+                if sip_address in self.dic_clients and 'Authorization:' in linea_decod:
+                    self.wfile.write(b"SIP/2.0 200 OK\r\n\r\n")
+                else:
+                    self.wfile.write(b"SIP/2.0 401 Unauthorized\r\n" + b"WWW Authenticate: Digest "
+                    + b"nonce='898989898798989898989'\r\n\r\n")
+                    
                 if ('sip:' not in linea_decod[1] or
                     '@' not in linea_decod[1] or
                     'SIP/2.0' not in linea_decod[2]):
