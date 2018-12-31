@@ -10,6 +10,7 @@ from uaclient import XML
 from xml.sax import make_parser
 from xml.sax.handler import ContentHandler
 import time
+import hashlib
 
 class SIPHandler(socketserver.DatagramRequestHandler):
     """SIP server class."""
@@ -43,6 +44,7 @@ class SIPHandler(socketserver.DatagramRequestHandler):
         """Contesta a los diferentes metodos SIP que le manda el cliente."""
         while 1:
             # Leyendo línea a línea lo que nos envía el cliente
+            NONCE = '898989898798989898989'
             line = self.rfile.read()
             linea_decod = line.decode('utf-8').split()
             print(linea_decod)
@@ -57,12 +59,21 @@ class SIPHandler(socketserver.DatagramRequestHandler):
                                         "port": port,
                                         
                                         }	
-
-                if sip_address in self.dic_clients and 'Authorization:' in linea_decod:
-                    self.wfile.write(b"SIP/2.0 200 OK\r\n\r\n")
+                
+                if sip_address in self.dic_clients and 'Authorization:' in linea_decod :
+                    response = linea_decod[8]
+                    print (response)
+                    m = hashlib.sha224(bytes(self.dic_registrados[sip_address],'utf-8'))
+                    m.update(bytes(NONCE,'utf-8'))
+                    response_proxy = m.hexdigest()
+                    print(response_proxy)
+                    if response == response_proxy:
+                        self.wfile.write(b"SIP/2.0 200 OK\r\n\r\n")
+                    else:
+                        self.wfile.write(b"ERROR\r\n\r\n")
                 else:
                     self.wfile.write(b"SIP/2.0 401 Unauthorized\r\n" + b"WWW Authenticate: Digest "
-                    + b"nonce='898989898798989898989'\r\n\r\n")
+                    + b"nonce= "+ bytes(NONCE,"utf-8") + b"\r\n\r\n")
                     
                 if ('sip:' not in linea_decod[1] or
                     '@' not in linea_decod[1] or

@@ -81,12 +81,14 @@ if __name__ == "__main__":
 
                 if 'nonce' in data.decode('utf-8'):
                     nonce=data.decode('utf-8').split()[-1].split('=')[-1]
-                    m= hashlib.sha224(bytes(nonce,'utf-8')).hexdigest()
+                    m = hashlib.sha224(bytes(DIC_CONFIG['account_passwd'],'utf-8'))
+                    m.update(bytes(nonce,'utf-8'))
+                    response = m.hexdigest()
                     print(nonce)  
-                    print(m)
+                    print(response)
                     line = (
                          'REGISTER sip:' + DIC_CONFIG['account_username'] + ':' + DIC_CONFIG['uaserver_puerto']
-                         + ' SIP/2.0\r\n' + 'Expires: ' + OPCION + '\r\n'+ 'Authorization: Digest response=' + 'response' +'\r\n\r\n')
+                         + ' SIP/2.0\r\n' + 'Expires: ' + OPCION + '\r\n'+ 'Authorization: Digest response= ' + response +'\r\n\r\n')
                     print("Enviando:", line)
                     my_socket.send(bytes(line, 'utf-8'))
                     data = my_socket.recv(1024)
