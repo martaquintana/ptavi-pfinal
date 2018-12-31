@@ -26,6 +26,10 @@ class SIPHandler(socketserver.DatagramRequestHandler):
 
             metodo = linea_decod[0]
             if metodo == 'INVITE':
+                if len(self.receptor) != 0:
+                    self.receptor.pop(0) #borra la ip anterior que se habia guardado
+                    self.receptor.pop(0) #borra el puerto anterior que se habia guardado
+
                 self.receptor.append(linea_decod[-4].split()[0])
                 self.receptor.append(linea_decod[-2])
                 print(self.receptor)
