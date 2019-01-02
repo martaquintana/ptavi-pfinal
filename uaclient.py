@@ -117,24 +117,25 @@ if __name__ == "__main__":
                 print("Solo puedes enviar Métodos REGISTER, INVITE o BYE")
 
             DATOS= ''.join(data_list)
-            print(DATOS.split())
-            if METODO == 'INVITE' and DATOS.split()[7] == '200':
-                print ("entra en ACK")
-                linea = ('ACK' + ' sip:' + DIC_CONFIG['account_username'] + ' SIP/2.0\r\n\r\n')
-                my_socket.send(bytes(linea, 'utf-8'))
-                data = my_socket.recv(1024)
-                print("ESTO MANDA EL SERVER",data.decode('utf-8'))
-                #LEER SDP QUE MANDE EL SEVER; VER PUERTOS¿?
-                receptor_server_IP = DATOS.split()[13]
-                receptor_server_Puerto = DATOS.split()[17]
-                print(receptor_server_Puerto)
-                print(receptor_server_IP)
-                fichero_audio = DIC_CONFIG["audio_path"]
-                aEjecutar = "./mp32rtp -i " + receptor_server_IP + " -p " + receptor_server_Puerto
-                aEjecutar += " < " + fichero_audio
-                print("Vamos a ejecutar", aEjecutar)
-                os.system(aEjecutar)  
-                print("Cancion enviada desde cliente")
+            #print(DATOS.split())
+            if DATOS.split()[1] != 'apagado':
+                if METODO == 'INVITE' and DATOS.split()[7] == '200':
+                    print ("entra en ACK")
+                    linea = ('ACK' + ' sip:' + DIC_CONFIG['account_username'] + ' SIP/2.0\r\n\r\n')
+                    my_socket.send(bytes(linea, 'utf-8'))
+                    data = my_socket.recv(1024)
+                    print("ESTO MANDA EL SERVER",data.decode('utf-8'))
+                    #LEER SDP QUE MANDE EL SEVER; VER PUERTOS¿?
+                    receptor_server_IP = DATOS.split()[13]
+                    receptor_server_Puerto = DATOS.split()[17]
+                    print(receptor_server_Puerto)
+                    print(receptor_server_IP)
+                    fichero_audio = DIC_CONFIG["audio_path"]
+                    aEjecutar = "./mp32rtp -i " + receptor_server_IP + " -p " + receptor_server_Puerto
+                    aEjecutar += " < " + fichero_audio
+                    print("Vamos a ejecutar", aEjecutar)
+                    os.system(aEjecutar)  
+                    print("Cancion enviada desde cliente")
         
         print("Socket terminado.")
 
@@ -142,5 +143,5 @@ if __name__ == "__main__":
         print("Usage: python3 uaclient.py config metodo opcion")
 
     except ConnectionRefusedError:
-        print("Servidor apagado / Error de puerto. ")
+        print("Servidor proxy_registrar apagado / Error de puerto. ")
 		  
