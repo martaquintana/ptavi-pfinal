@@ -11,6 +11,7 @@ from xml.sax import make_parser
 from xml.sax.handler import ContentHandler
 import time
 import hashlib
+import random
 
 class SIPHandler(socketserver.DatagramRequestHandler):
     """SIP server class."""
@@ -44,7 +45,6 @@ class SIPHandler(socketserver.DatagramRequestHandler):
         """Contesta a los diferentes metodos SIP que le manda el cliente."""
         while 1:
             # Leyendo línea a línea lo que nos envía el cliente
-            NONCE = '898989898798989898989'
             line = self.rfile.read()
             linea_decod = line.decode('utf-8').split()
             print(linea_decod)
@@ -107,15 +107,19 @@ class SIPHandler(socketserver.DatagramRequestHandler):
                print(user)
                if user in self.dic_clients:
                    print("si!! el usuario está registrado")
-                   with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as my_socket:
-                       my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-                       my_socket.connect((self.dic_clients[user]["address"], int(self.dic_clients[user]["port"])) )
-                       send_message =line
-                       print (send_message)
-                       my_socket.send(send_message)
-                       recv_message = my_socket.recv(1024)
-                       print(recv_message)
-                       self.wfile.write(recv_message)
+                   try:
+                       with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as my_socket:
+                           my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                           my_socket.connect((self.dic_clients[user]["address"], int(self.dic_clients[user]["port"])) )
+                           send_message =line
+                           print (send_message)
+                           my_socket.send(send_message)
+                           recv_message = my_socket.recv(1024)
+                           print(recv_message)
+                           self.wfile.write(recv_message)
+                   except ConnectionRefusedError:
+                       self.wfile.write(b"UAServer apagado / Error de puerto. ")
+                       print("UAServer apagado / Error de puerto. ")
                    
 					# mirar a quién invitan en el diccionario de registrados 
 					# abrirle un socket
@@ -125,10 +129,10 @@ class SIPHandler(socketserver.DatagramRequestHandler):
                else:
                    self.wfile.write(b"SIP/2.0 404 User Not Found\r\n\r\n")
                    break
+                
             print("Nuevo usuario registrado")
             self.register2json()
             print(self.dic_clients)
-            
             break
 
 
@@ -137,6 +141,7 @@ if __name__ == "__main__":
     Programa principal
     """
     try:
+        NONCE = str(random.randrange(10000000000)) #Cada vez que se inicia el proxy_registrar el Nonce distinto y aleatorio.
         fichero = sys.argv[1]
         leerxml = XML(fichero)
         DIC_CONFIG= XML.get_diccionario(leerxml)
