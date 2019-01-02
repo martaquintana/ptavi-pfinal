@@ -13,14 +13,15 @@ import time
 import hashlib
 import random
 
+
 class SIPHandler(socketserver.DatagramRequestHandler):
     """SIP server class."""
-    
+
     dic_registrados = {}
     dic_clients = {}
-    expires ='0'
-    user_invited= []
-   
+    expires = '0'
+    user_invited = []
+
     def register2json(self):
         """JSON file."""
         json.dump(self.dic_clients, open(DIC_CONFIG['database_path'], 'w'))
@@ -28,8 +29,9 @@ class SIPHandler(socketserver.DatagramRequestHandler):
     def json2register(self):
         """Open JSON file and gets the dictionary."""
         with open(DIC_CONFIG['database_passwdpath'], 'r') as fich:
-             self.dic_registrados = json.load(fich)
+            self.dic_registrados = json.load(fich)
         print(self.dic_registrados)
+
     def whohasexpired(self):
         """Search and delete the clients expired."""
         del_list = []
@@ -54,17 +56,13 @@ class SIPHandler(socketserver.DatagramRequestHandler):
                 sip_address = client_sip[1]
                 port = client_sip[-1]
                 self.json2register()
-                self.dic_clients[sip_address] = {
-                                        "address": self.client_address[0],
-                                        "port": port,
-                                        
-                                        }	
-                
-                if sip_address in self.dic_clients and 'Authorization:' in linea_decod :
+                self.dic_clients[sip_address] = {"address": self.client_address[0], "port": port, }	
+
+                if sip_address in self.dic_clients and 'Authorization:' in linea_decod:
                     response = linea_decod[8]
                     print (response)
-                    m = hashlib.sha224(bytes(self.dic_registrados[sip_address],'utf-8'))
-                    m.update(bytes(NONCE,'utf-8'))
+                    m = hashlib.sha224(bytes(self.dic_registrados[sip_address], 'utf-8'))
+                    m.update(bytes(NONCE, 'utf-8'))
                     response_proxy = m.hexdigest()
                     print(response_proxy)
                     if response == response_proxy:
@@ -73,14 +71,14 @@ class SIPHandler(socketserver.DatagramRequestHandler):
                         self.wfile.write(b"ERROR\r\n\r\n")
                 else:
                     self.wfile.write(b"SIP/2.0 401 Unauthorized\r\n" + b"WWW Authenticate: Digest "
-                    + b"nonce= "+ bytes(NONCE,"utf-8") + b"\r\n\r\n")
-                    
+                    + b"nonce= " + bytes(NONCE, "utf-8") + b"\r\n\r\n")
+
                 if ('sip:' not in linea_decod[1] or
                     '@' not in linea_decod[1] or
                     'SIP/2.0' not in linea_decod[2]):
                     self.wfile.write(b"SIP/2.0 400 Bad Request\r\n\r\n")
                     break
-                
+
                 if linea_decod[3] == 'Expires:':
                     print("HEEEY")
                     expires = linea_decod[4]
@@ -96,40 +94,40 @@ class SIPHandler(socketserver.DatagramRequestHandler):
                         del self.dic_clients[sip_address]
                     else:
                         self.whohasexpired()
-            
+
             if METODO == "INVITE":
-               self.user_invited.append(linea_decod[1].split(":")[1])
-                        
+                self.user_invited.append(linea_decod[1].split(":")[1])
+
             if METODO != "REGISTER":
-               #EL PROXY TODO LO QUE LE LLEGA LO MANDA Y EL SERVER CONTESTA con los errores
-               user = self.user_invited[0]
-               self.whohasexpired()
-               print(user)
-               if user in self.dic_clients:
-                   print("si!! el usuario está registrado")
-                   try:
-                       with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as my_socket:
-                           my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-                           my_socket.connect((self.dic_clients[user]["address"], int(self.dic_clients[user]["port"])) )
-                           send_message =line
-                           print (send_message)
-                           my_socket.send(send_message)
-                           recv_message = my_socket.recv(1024)
-                           print(recv_message)
-                           self.wfile.write(recv_message)
-                   except ConnectionRefusedError:
-                       self.wfile.write(b"UAServer apagado / Error de puerto. ")
-                       print("UAServer apagado / Error de puerto. ")
-                   
-					# mirar a quién invitan en el diccionario de registrados 
+                # EL PROXY TODO LO QUE LE LLEGA LO MANDA Y EL SERVER CONTESTA con los errores
+                user = self.user_invited[0]
+                self.whohasexpired()
+                print(user)
+                if user in self.dic_clients:
+                    print("si!! el usuario está registrado")
+                    try:
+                        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as my_socket:
+                            my_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                            my_socket.connect((self.dic_clients[user]["address"], int(self.dic_clients[user]["port"])))
+                            send_message = line
+                            print (send_message)
+                            my_socket.send(send_message)
+                            recv_message = my_socket.recv(1024)
+                            print(recv_message)
+                            self.wfile.write(recv_message)
+                    except ConnectionRefusedError:
+                        self.wfile.write(b"UAServer apagado / Error de puerto. ")
+                        print("UAServer apagado / Error de puerto. ")
+
+                    # mirar a quién invitan en el diccionario de registrados 
 					# abrirle un socket
 					# enviarle lo que he recibido con send
 					# recibir respuesta con recv
 					# enviar respuesta al otro lado con write
-               else:
-                   self.wfile.write(b"SIP/2.0 404 User Not Found\r\n\r\n")
-                   break
-                
+                else:
+                    self.wfile.write(b"SIP/2.0 404 User Not Found\r\n\r\n")
+                    break
+
             print("Nuevo usuario registrado")
             self.register2json()
             print(self.dic_clients)
@@ -141,21 +139,20 @@ if __name__ == "__main__":
     Programa principal
     """
     try:
-        NONCE = str(random.randrange(10000000000)) #Cada vez que se inicia el proxy_registrar el Nonce distinto y aleatorio.
+        NONCE = str(random.randrange(10000000000))
+        # Cada vez que se inicia el proxy_registrar el Nonce distinto y aleatorio.
         fichero = sys.argv[1]
         leerxml = XML(fichero)
-        DIC_CONFIG= XML.get_diccionario(leerxml)
+        DIC_CONFIG = XML.get_diccionario(leerxml)
         if DIC_CONFIG['server_ip'] == '':
             DIC_CONFIG['server_ip'] = '127.0.0.1'
         print(DIC_CONFIG)
-        #print(DIC_CONFIG['server_name'])
-        serv = socketserver.UDPServer((DIC_CONFIG['server_ip'], int(DIC_CONFIG['server_puerto']) ), SIPHandler)
-        print("Server MiServidorBigBang listening at port "+ DIC_CONFIG['server_puerto']  +"...")
+        # print(DIC_CONFIG['server_name'])
+        serv = socketserver.UDPServer((DIC_CONFIG['server_ip'], int(DIC_CONFIG['server_puerto'])), SIPHandler)
+        print("Server MiServidorBigBang listening at port " + DIC_CONFIG['server_puerto'] + "...")
         try:
             serv.serve_forever()
         except KeyboardInterrupt:
             print("Finalizado servidor")
-    except (IndexError, ValueError, PermissionError or len(sys.argv)< 2):
+    except (IndexError, ValueError, PermissionError or len(sys.argv) < 2):
         print("Usage: phython3 proxy_registrar.py config")
-
-   
