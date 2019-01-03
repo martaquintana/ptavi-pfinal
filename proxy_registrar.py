@@ -44,6 +44,7 @@ class SIPHandler(socketserver.DatagramRequestHandler):
             del self.dic_clients[clients]
 
     def appendlog(mensaje, log_path):
+        """Add to a fich log messages"""
         now = time.strftime(
                             '%Y-%m-%d %H:%M:%S', time.gmtime(time.time()))
         fich_log = open(log_path, 'a')
