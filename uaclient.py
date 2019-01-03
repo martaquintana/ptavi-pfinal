@@ -125,7 +125,8 @@ if __name__ == "__main__":
 
             DATOS = ''.join(data_list)
             # print(DATOS.split())
-            if DATOS.split()[1] != 'apagado' and DATOS.split()[1] != '404':
+            if (DATOS.split()[1] != 'apagado' and DATOS.split()[1] != '404' and
+               DATOS.split()[0] != 'Error'):
                 if METODO == 'INVITE' and DATOS.split()[7] == '200':
                     print ("entra en ACK")
                     linea = ('ACK' + ' sip:' +
