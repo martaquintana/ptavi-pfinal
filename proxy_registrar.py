@@ -13,6 +13,16 @@ import time
 import hashlib
 import random
 
+class Log():
+    def appendlog(mensaje, log_path):
+        """Add to a fich log messages"""
+        now = time.strftime(
+                            '%Y-%m-%d %H:%M:%S', time.gmtime(time.time()))
+        fich_log = open(log_path, 'a')
+        mensaje = mensaje.replace('\r\n',' ')
+        fich_log.write(now + ' ' + mensaje + '\r\n')
+        fich_log.close()
+
 
 class SIPHandler(socketserver.DatagramRequestHandler):
     """SIP server class."""
@@ -42,15 +52,6 @@ class SIPHandler(socketserver.DatagramRequestHandler):
                 del_list.append(clients)
         for clients in del_list:
             del self.dic_clients[clients]
-
-    def appendlog(mensaje, log_path):
-        """Add to a fich log messages"""
-        now = time.strftime(
-                            '%Y-%m-%d %H:%M:%S', time.gmtime(time.time()))
-        fich_log = open(log_path, 'a')
-        mensaje = mensaje.replace('\r\n','')
-        fich_log.write(now + ' ' + mensaje + '\r\n')
-        fich_log.close()
 
     def handle(self):
         """Contesta a los diferentes metodos SIP que le manda el cliente."""
@@ -182,7 +183,7 @@ if __name__ == "__main__":
         print(DIC_CONFIG)
         LOG_PATH = DIC_CONFIG['log_path']
         # print(DIC_CONFIG['server_name'])
-        SIPHandler.appendlog('Starting...', LOG_PATH)
+        Log.appendlog('Starting...', LOG_PATH)
         serv = socketserver.UDPServer((DIC_CONFIG['server_ip'],
                                        int(DIC_CONFIG['server_puerto'])),
                                       SIPHandler)
@@ -197,4 +198,4 @@ if __name__ == "__main__":
         print("Usage: phython3 proxy_registrar.py config")
     except (FileNotFoundError or NameError):
         print("Usage: phython3 proxy_registrar.py config")
-    SIPHandler.appendlog('Finishing.', LOG_PATH)
+    Log.appendlog('Finishing.', LOG_PATH)
