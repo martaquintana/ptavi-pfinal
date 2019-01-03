@@ -43,6 +43,14 @@ class SIPHandler(socketserver.DatagramRequestHandler):
         for clients in del_list:
             del self.dic_clients[clients]
 
+    def appendlog(mensaje, log_path):
+        now = time.strftime(
+                            '%Y-%m-%d %H:%M:%S', time.gmtime(time.time()))
+        fich_log = open(log_path, 'a')
+        mensaje = mensaje.replace('\r\n','')
+        fich_log.write(now + ' ' + mensaje + '\r\n')
+        fich_log.close()
+
     def handle(self):
         """Contesta a los diferentes metodos SIP que le manda el cliente."""
         while 1:
@@ -86,23 +94,28 @@ class SIPHandler(socketserver.DatagramRequestHandler):
                         break
 
                 if linea_decod[3] == 'Expires:':
-                    print("HEEEY")
-                    expires = linea_decod[4]
-                    print(expires)
-                    then = time.strftime(
-                           '%Y-%m-%d %H:%M:%S', time.gmtime(
-                                  time.time() + float((expires))))
-                    print(then)
-                    self.dic_clients[sip_address][
-                        "fecha_registro"] = time.time()
-                    self.dic_clients[sip_address][
-                        "tiempo_expiracion"] = expires
-                    self.dic_clients[sip_address][
-                        "expires"] = then
-                    if expires == '0':
-                        del self.dic_clients[sip_address]
-                    else:
-                        self.whohasexpired()
+                    try:
+                        print("HEEEY")
+                        expires = linea_decod[4]
+                        print(expires)
+                        then = time.strftime(
+                               '%Y-%m-%d %H:%M:%S', time.gmtime(
+                                      time.time() + float((expires))))
+                        print(then)
+                        self.dic_clients[sip_address][
+                            "fecha_registro"] = time.time()
+                        self.dic_clients[sip_address][
+                            "tiempo_expiracion"] = expires
+                        self.dic_clients[sip_address][
+                            "expires"] = then
+                        if expires == '0':
+                            del self.dic_clients[sip_address]
+                        else:
+                            self.whohasexpired()
+                    except ValueError:
+                        self.wfile.write(b"Error expires must be a number")
+                        print("Error expires must be a number")
+                        break
 
             if METODO == "INVITE":
                 self.user_invited.append(linea_decod[1].split(":")[1])
@@ -110,32 +123,38 @@ class SIPHandler(socketserver.DatagramRequestHandler):
             if METODO != "REGISTER":
                 """ EL PROXY TODO LO QUE LE LLEGA LO MANDA,
                 Y EL SERVER CONTESTA con los errores"""
-                user = self.user_invited[0]
-                self.whohasexpired()
-                print(user)
-                if user in self.dic_clients and user != '':
-                    print("si!! el usuario está registrado")
-                    try:
-                        with socket.socket(socket.AF_INET,
-                                           socket.SOCK_DGRAM) as my_socket:
-                            my_socket.setsockopt(socket.SOL_SOCKET,
-                                                 socket.SO_REUSEADDR, 1)
-                            my_socket.connect((
-                                    self.dic_clients[user]["address"],
-                                    int(self.dic_clients[user]["port"])))
-                            send_message = line
-                            print (send_message)
-                            my_socket.send(send_message)
-                            recv_message = my_socket.recv(1024)
-                            print(recv_message)
-                            self.wfile.write(recv_message)
-                    except ConnectionRefusedError:
-                        self.wfile.write(
-                            b"UAServer apagado / Error de puerto. ")
-                        print("UAServer apagado / Error de puerto. ")
+                try:
+                    user = self.user_invited[0]
+                    self.whohasexpired()
+                    print(user)
+                    if user in self.dic_clients and user != '':
+                        print("si!! el usuario está registrado")
+                        try:
+                            with socket.socket(socket.AF_INET,
+                                               socket.SOCK_DGRAM) as my_socket:
+                                my_socket.setsockopt(socket.SOL_SOCKET,
+                                                     socket.SO_REUSEADDR, 1)
+                                my_socket.connect((
+                                        self.dic_clients[user]["address"],
+                                        int(self.dic_clients[user]["port"])))
+                                send_message = line
+                                print (send_message)
+                                my_socket.send(send_message)
+                                recv_message = my_socket.recv(1024)
+                                print(recv_message)
+                                self.wfile.write(recv_message)
+                        except ConnectionRefusedError:
+                            self.wfile.write(
+                                b"UAServer apagado / Error de puerto. ")
+                            print("UAServer apagado / Error de puerto. ")
 
-                else:
-                    self.wfile.write(b"SIP/2.0 404 User Not Found\r\n\r\n")
+                    else:
+                        self.wfile.write(b"SIP/2.0 404 User Not Found\r\n\r\n")
+                        break
+                except :
+                    self.wfile.write(
+                                b"Error You can't say Bye without an Invite")
+                    print("You can't say Bye without an Invite")
                     break
 
             print("Nuevo usuario registrado")
@@ -160,7 +179,9 @@ if __name__ == "__main__":
         if DIC_CONFIG['server_ip'] == '':
             DIC_CONFIG['server_ip'] = '127.0.0.1'
         print(DIC_CONFIG)
+        LOG_PATH = DIC_CONFIG['log_path']
         # print(DIC_CONFIG['server_name'])
+        SIPHandler.appendlog('Starting...', LOG_PATH)
         serv = socketserver.UDPServer((DIC_CONFIG['server_ip'],
                                        int(DIC_CONFIG['server_puerto'])),
                                       SIPHandler)
@@ -168,7 +189,11 @@ if __name__ == "__main__":
               DIC_CONFIG['server_puerto'] + "...")
         try:
             serv.serve_forever()
+            
         except KeyboardInterrupt:
             print("Finalizado servidor")
     except (IndexError, ValueError, PermissionError or len(sys.argv) < 2):
         print("Usage: phython3 proxy_registrar.py config")
+    except (FileNotFoundError or NameError):
+        print("Usage: phython3 proxy_registrar.py config")
+    SIPHandler.appendlog('Finishing.', LOG_PATH)
