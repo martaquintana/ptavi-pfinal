@@ -25,9 +25,8 @@ class SIPHandler(socketserver.DatagramRequestHandler):
                     '@' not in linea_decod[1] or
                     'SIP/2.0' not in linea_decod[2]):
                         self.wfile.write(b"SIP/2.0 400 Bad Request\r\n\r\n")
-                        Log.appendlog('Send to ' + self.receptor[0] + ':' +
-                                      self.receptor[1] + ': ' +
-                                      'SIP/2.0 405 Method Not Allowed\r\n\r\n' , LOG_PATH)
+                        Log.appendlog('Error: ' +
+                                      'SIP/2.0 400 Bad Request\r\n\r\n' , LOG_PATH)
                         break
 
             metodo = linea_decod[0]
@@ -44,6 +43,7 @@ class SIPHandler(socketserver.DatagramRequestHandler):
                 Log.appendlog('Received from ' + self.receptor[0] + ':' +
                               self.receptor[1] + ': ' +
                               recv_message, LOG_PATH)
+                # HAY QUE PONER QUE LO RECIBE DEL PROXY?????
                 print(self.receptor)
                 self.wfile.write(b"SIP/2.0 100 Trying\r\n\r\n")
                 Log.appendlog('Send to ' + self.receptor[0] + ':' +
@@ -104,8 +104,7 @@ class SIPHandler(socketserver.DatagramRequestHandler):
 
             if metodo != 'INVITE' or metodo != 'BYE' or metodo != 'ACK':
                 self.wfile.write(b"SIP/2.0 405 Method Not Allowed\r\n\r\n")
-                Log.appendlog('Send to ' + self.receptor[0] + ':' +
-                              self.receptor[1] + ': ' +
+                Log.appendlog('Error: '+
                               'SIP/2.0 405 Method Not Allowed\r\n\r\n' , LOG_PATH)
                 break
             # Si no hay más líneas salimos del bucle infinito
@@ -132,7 +131,8 @@ if __name__ == "__main__":
         try:
             serv.serve_forever()
         except KeyboardInterrupt:
+            Log.appendlog('Finishing.', LOG_PATH)
             print("Finalizado servidor")
     except (IndexError, ValueError, PermissionError or len(sys.argv) < 2):
         print("Usage: phython3 uaserver.py config")
-    Log.appendlog('Finishing.', LOG_PATH)
+
