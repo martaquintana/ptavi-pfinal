@@ -40,31 +40,24 @@ class SIPHandler(socketserver.DatagramRequestHandler):
                 self.receptor.append(linea_decod[-4].split()[0])
                 self.receptor.append(linea_decod[-2])
                 recv_message = ' '.join(linea_decod) 
-                Log.appendlog('Received from ' + self.receptor[0] + ':' +
-                              self.receptor[1] + ': ' +
+                Log.appendlog('Received from ' + DIC_CONFIG['regproxy_ip'] + ':' +
+                              DIC_CONFIG['regproxy_puerto'] + ': ' +
                               recv_message, LOG_PATH)
                 # HAY QUE PONER QUE LO RECIBE DEL PROXY?????
                 print(self.receptor)
-                self.wfile.write(b"SIP/2.0 100 Trying\r\n\r\n")
-                Log.appendlog('Send to ' + self.receptor[0] + ':' +
-                              self.receptor[1] + ': ' +
-                              'SIP/2.0 100 Trying\r\n\r\n', LOG_PATH)
-                self.wfile.write(b"SIP/2.0 180 Ringing\r\n\r\n")
-                Log.appendlog('Send to ' + self.receptor[0] + ':' +
-                              self.receptor[1] + ': ' +
-                              'SIP/2.0 180 Ringing\r\n\r\n', LOG_PATH)
-                self.wfile.write(b"SIP/2.0 200 OK\r\n\r\n")
-                Log.appendlog('Send to ' + self.receptor[0] + ':' +
-                              self.receptor[1] + ': ' +
-                              'SIP/2.0 200 OK\r\n\r\n', LOG_PATH)
                 sdp = ('Content-Type: application/sdp\r\n\r\n' + 'v=0\r\n' +
                        'o=' + DIC_CONFIG['account_username'] +
                        ' ' + DIC_CONFIG['uaserver_ip'] +
                        '\r\n' + 's= Christmas\r\n' + 't=0\r\n' + 'm=audio ' +
                        DIC_CONFIG['rtpaudio_puerto'] + ' RTP\r\n')
-                self.wfile.write(bytes(sdp, "utf-8"))
-                Log.appendlog('Send to ' + self.receptor[0] + ':' +
-                              self.receptor[1] + ': ' + sdp, LOG_PATH)
+                       
+                mensaje = ('SIP/2.0 100 Trying\r\n\r\n' + 'SIP/2.0 180 Ringing\r\n\r\n' +
+                           'SIP/2.0 200 OK\r\n\r\n' + sdp)
+                self.wfile.write(bytes(mensaje, "utf-8"))
+                           
+                Log.appendlog('Send to ' + DIC_CONFIG['regproxy_ip'] + ':' +
+                              DIC_CONFIG['regproxy_puerto'] + ': ' +
+                              mensaje, LOG_PATH)
                 break
 
             if metodo == 'ACK':
