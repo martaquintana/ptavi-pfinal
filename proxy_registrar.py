@@ -71,8 +71,8 @@ class SIPHandler(socketserver.DatagramRequestHandler):
                                             "address": self.client_address[0],
                                             "port": port, }
                 message_recv = ' '.join(linea_decod)
-                Log.appendlog('Received from ' + self.dic_clients[sip_address]["address"] + ':' +
-                              self.dic_clients[sip_address]["port"] + ': ' +
+                Log.appendlog('Received from ' + self.client_address[0] + ':' +
+                              str(self.client_address[1]) + ': ' +
                               message_recv, LOG_PATH)
 
                 if (sip_address in self.dic_clients and
@@ -86,21 +86,24 @@ class SIPHandler(socketserver.DatagramRequestHandler):
                     print(response_proxy)
                     if response == response_proxy:
                         self.wfile.write(b"SIP/2.0 200 OK\r\n\r\n")
-                        Log.appendlog('Send to ' + self.dic_clients[sip_address]["address"] + ':' +
-                                      self.dic_clients[sip_address]["port"] + ': ' +
+                        Log.appendlog('Send to ' + self.client_address[0] + ':' +
+                                      str(self.client_address[1]) + ': ' +
                                       'SIP/2.0 200 OK\r\n\r\n', LOG_PATH)
                     else:
-                        self.wfile.write(b"ERROR Authorization invalid\r\n\r\n")
-                        Log.appendlog('Error: ' +
-                                      'ERROR Authorization invalid\r\n\r\n' , LOG_PATH)
+                        mensaje = ('ERROR Authorization invalid\r\n\r\n')
+                        self.wfile.write(bytes(mensaje,"utf-8"))
+                        Log.appendlog('Error: ' + mensaje , LOG_PATH)
+                        Log.appendlog('Send to ' + self.client_address[0] + ':' +
+                                      str(self.client_address[1]) + ': ' +
+                                      mensaje, LOG_PATH)
                         
                 else:
                     self.wfile.write(b"SIP/2.0 401 Unauthorized\r\n" +
                                      b"WWW Authenticate: Digest " +
                                      b"nonce= " + bytes(NONCE, "utf-8") +
                                      b"\r\n\r\n")
-                    Log.appendlog('Send to ' + self.dic_clients[sip_address]["address"] + ':' +
-                                  self.dic_clients[sip_address]["port"] + ': ' +
+                    Log.appendlog('Send to ' + self.client_address[0] + ':' +
+                                  str(self.client_address[1]) + ': ' +
                                   'SIP/2.0 401 Unauthorized\r\n' +
                                   'WWW Authenticate: Digest ' +
                                   'nonce= ' + NONCE + '\r\n\r\n', LOG_PATH)
@@ -108,9 +111,12 @@ class SIPHandler(socketserver.DatagramRequestHandler):
                 if('sip:' not in linea_decod[1] or
                    '@' not in linea_decod[1] or
                    'SIP/2.0' not in linea_decod[2]):
-                        self.wfile.write(b"SIP/2.0 400 Bad Request\r\n\r\n")
-                        Log.appendlog('Error: ' +
-                                      'SIP/2.0 400 Bad Request\r\n\r\n' , LOG_PATH)
+                        mensaje = ('SIP/2.0 400 Bad Request\r\n\r\n')
+                        self.wfile.write(bytes(mensaje,"utf-8"))
+                        Log.appendlog('Error: ' + mensaje , LOG_PATH)
+                        Log.appendlog('Send to ' + self.client_address[0] + ':' +
+                                      str(self.client_address[1]) + ': ' +
+                                      mensaje, LOG_PATH)
                         break
 
                 if linea_decod[3] == 'Expires:':
@@ -133,10 +139,13 @@ class SIPHandler(socketserver.DatagramRequestHandler):
                         else:
                             self.whohasexpired()
                     except ValueError:
-                        self.wfile.write(b"Error expires must be a number")
-                        print("Error expires must be a number")
-                        Log.appendlog('Error: ' +
-                                      'Error expires must be a number' , LOG_PATH)
+                        mensaje = ('Error expires must be a number')
+                        self.wfile.write(bytes(mensaje,"utf-8"))
+                        print(mensaje)
+                        Log.appendlog('Error: ' + mensaje, LOG_PATH)
+                        Log.appendlog('Send to ' + self.client_address[0] + ':' +
+                                      str(self.client_address[1])+ ': ' +
+                                      mensaje, LOG_PATH)
                         break
 
             if METODO == "INVITE":
@@ -159,6 +168,9 @@ class SIPHandler(socketserver.DatagramRequestHandler):
                                 my_socket.connect((
                                         self.dic_clients[user]["address"],
                                         int(self.dic_clients[user]["port"])))
+                                Log.appendlog('Received from ' + self.client_address[0] + ':' +
+                                              str(self.client_address[1])+ ': ' +
+                                              line.decode("utf-8") , LOG_PATH)
                                 send_message = line
                                 print (send_message)
                                 my_socket.send(send_message)
@@ -168,11 +180,13 @@ class SIPHandler(socketserver.DatagramRequestHandler):
                                               message_send , LOG_PATH)
                                 recv_message = my_socket.recv(1024)
                                 print(recv_message)
-                                self.wfile.write(recv_message)
-                                message_recv = recv_message.decode('utf-8')
                                 Log.appendlog('Received from ' + self.dic_clients[user]["address"] + ':' +
                                               self.dic_clients[user]["port"] + ': ' +
-                                              message_recv , LOG_PATH)
+                                              recv_message.decode('utf-8') , LOG_PATH)
+                                self.wfile.write(recv_message)
+                                Log.appendlog('Send to ' + self.client_address[0] + ':' +
+                                              str(self.client_address[1])+ ': ' +
+                                              recv_message.decode('utf-8') , LOG_PATH)
                         except ConnectionRefusedError:
                             error = (b"No server listening at " +
                                 bytes(self.dic_clients[user]["address"], "utf-8")+
@@ -181,18 +195,26 @@ class SIPHandler(socketserver.DatagramRequestHandler):
                             print(error)
                             Log.appendlog('Error: ' +
                                           error.decode('utf-8') , LOG_PATH)
+                            Log.appendlog('Send to ' + str(self.client_address[0]) + ':' +
+                                          str(self.client_address[1]) + ': ' +
+                                          error.decode('utf-8') , LOG_PATH)
 
                     else:
-                        self.wfile.write(b"SIP/2.0 404 User Not Found\r\n\r\n")
-                        Log.appendlog('Error: ' +
-                                      'SIP/2.0 404 User Not Found\r\n\r\n' , LOG_PATH)
+                        mensaje = 'SIP/2.0 404 User Not Found\r\n\r\n'
+                        self.wfile.write(bytes(mensaje,'utf-8'))
+                        Log.appendlog('Error: ' + mensaje , LOG_PATH)
+                        Log.appendlog('Send to ' + str(self.client_address[0]) + ':' +
+                                      str(self.client_address[1]) + ': ' +
+                                      mensaje , LOG_PATH)
                         break
-                except :
-                    self.wfile.write(
-                                b"Error You can not say Bye without an Invite")
-                    print("You can't say Bye without an Invite")
-                    Log.appendlog('Error: ' +
-                                  'Error You can not say Bye without an Invite' , LOG_PATH)
+                except IndexError:
+                    mensaje = 'Error You can not say Bye without an Invite'
+                    self.wfile.write(bytes(mensaje,'utf-8'))
+                    print(mensaje)
+                    Log.appendlog('Error: ' + mensaje , LOG_PATH)
+                    Log.appendlog('Send to ' + str(self.client_address[0]) + ':' +
+                                   str(self.client_address[1]) + ': ' +
+                                   mensaje , LOG_PATH)
                     break
 
             print("Nuevo usuario registrado")

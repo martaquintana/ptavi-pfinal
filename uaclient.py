@@ -176,14 +176,14 @@ if __name__ == "__main__":
                              DIC_CONFIG['account_username'] +
                              ' SIP/2.0\r\n\r\n')
                     my_socket.send(bytes(linea, 'utf-8'))
-                    Log.appendlog('Send to ' + receptor_server_IP + ':' +
-                                  receptor_server_Puerto + ': ' +
+                    Log.appendlog('Send to ' + DIC_CONFIG['regproxy_ip'] + ':' +
+                                  DIC_CONFIG['regproxy_puerto'] + ': ' +
                                   linea , LOG_PATH)
                     data = my_socket.recv(1024)
                     print("ESTO MANDA EL SERVER", data.decode('utf-8'))
                     recv_message = data.decode('utf-8')
-                    Log.appendlog('Received from ' + receptor_server_IP + ':' +
-                                  receptor_server_Puerto + ': ' +
+                    Log.appendlog('Received from ' + DIC_CONFIG['regproxy_ip'] + ':' +
+                                  DIC_CONFIG['regproxy_puerto'] + ': ' +
                                   recv_message , LOG_PATH)
                     fichero_audio = DIC_CONFIG["audio_path"]
                     aEjecutar = ("./mp32rtp -i " +
