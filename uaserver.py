@@ -8,7 +8,7 @@ from uaclient import XMLHandler
 from uaclient import XML
 from xml.sax import make_parser
 from xml.sax.handler import ContentHandler
-from proxy_registrar import Log
+from uaclient import Log
 
 
 class SIPHandler(socketserver.DatagramRequestHandler):
@@ -27,7 +27,8 @@ class SIPHandler(socketserver.DatagramRequestHandler):
                         mensaje = ('SIP/2.0 400 Bad Request\r\n\r\n')
                         self.wfile.write(bytes(mensaje, "utf-8"))
                         Log.appendlog('Error: ' + mensaje, LOG_PATH)
-                        Log.appendlog('Send to ' + self.client_address[0] + ':' +
+                        Log.appendlog('Send to ' +
+                                      self.client_address[0] + ':' +
                                       str(self.client_address[1]) + ': ' +
                                       mensaje, LOG_PATH)
                         break
@@ -42,7 +43,7 @@ class SIPHandler(socketserver.DatagramRequestHandler):
 
                 self.receptor.append(linea_decod[-4].split()[0])
                 self.receptor.append(linea_decod[-2])
-                recv_message = ' '.join(linea_decod) 
+                recv_message = ' '.join(linea_decod)
                 Log.appendlog('Received from ' + self.client_address[0] + ':' +
                               str(self.client_address[1]) + ': ' +
                               recv_message, LOG_PATH)
@@ -52,8 +53,9 @@ class SIPHandler(socketserver.DatagramRequestHandler):
                        ' ' + DIC_CONFIG['uaserver_ip'] +
                        '\r\n' + 's= Christmas\r\n' + 't=0\r\n' + 'm=audio ' +
                        DIC_CONFIG['rtpaudio_puerto'] + ' RTP\r\n')
-                       
-                mensaje = ('SIP/2.0 100 Trying\r\n\r\n' + 'SIP/2.0 180 Ringing\r\n\r\n' +
+
+                mensaje = ('SIP/2.0 100 Trying\r\n\r\n' +
+                           'SIP/2.0 180 Ringing\r\n\r\n' +
                            'SIP/2.0 200 OK\r\n\r\n' + sdp)
                 self.wfile.write(bytes(mensaje, "utf-8"))
                 Log.appendlog('Send to ' + self.client_address[0] + ':' +
@@ -69,9 +71,9 @@ class SIPHandler(socketserver.DatagramRequestHandler):
                 receptor_Puerto = self.receptor[1]
                 print(receptor_Puerto)
                 print(receptor_IP)
-                recv_message = ' '.join(linea_decod) 
+                recv_message = ' '.join(linea_decod)
                 Log.appendlog('Received from ' + self.client_address[0] + ':' +
-                              str(self.client_address[1])+ ': ' +
+                              str(self.client_address[1]) + ': ' +
                               recv_message, LOG_PATH)
                 fichero_audio = DIC_CONFIG["audio_path"]
                 aEjecutar = ("./mp32rtp -i " +
@@ -82,25 +84,25 @@ class SIPHandler(socketserver.DatagramRequestHandler):
                 self.wfile.write(b"cancion.mp3 enviada desde servidor")
                 Log.appendlog('Send to ' + self.client_address[0] + ':' +
                               str(self.client_address[1]) + ': ' +
-                              'cancion.mp3 enviada desde servidor' , LOG_PATH)
+                              'cancion.mp3 enviada desde servidor', LOG_PATH)
                 break
 
             if metodo == 'BYE':
-                recv_message = ' '.join(linea_decod) 
+                recv_message = ' '.join(linea_decod)
                 Log.appendlog('Received from ' + self.client_address[0] + ':' +
                               str(self.client_address[1]) + ': ' +
                               recv_message, LOG_PATH)
                 self.wfile.write(b"SIP/2.0 200 OK\r\n\r\n")
                 Log.appendlog('Send to ' + self.client_address[0] + ':' +
                               str(self.client_address[1]) + ': ' +
-                              'SIP/2.0 200 OK\r\n\r\n' , LOG_PATH)
+                              'SIP/2.0 200 OK\r\n\r\n', LOG_PATH)
                 print(self.client_address)
                 break
 
             if metodo != 'INVITE' or metodo != 'BYE' or metodo != 'ACK':
                 mensaje = ('SIP/2.0 405 Method Not Allowed\r\n\r\n')
-                self.wfile.write(bytes(mensaje,"utf-8"))
-                Log.appendlog('Error: '+ mensaje , LOG_PATH)
+                self.wfile.write(bytes(mensaje, "utf-8"))
+                Log.appendlog('Error: ' + mensaje, LOG_PATH)
                 Log.appendlog('Send to ' + self.client_address[0] + ':' +
                               str(self.client_address[1]) + ': ' +
                               mensaje, LOG_PATH)

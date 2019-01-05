@@ -12,16 +12,7 @@ from xml.sax.handler import ContentHandler
 import time
 import hashlib
 import random
-
-class Log():
-    def appendlog(mensaje, log_path):
-        """Add to a fich log messages"""
-        now = time.strftime(
-                            '%Y-%m-%d %H:%M:%S', time.gmtime(time.time()))
-        fich_log = open(log_path, 'a')
-        mensaje = mensaje.replace('\r\n',' ')
-        fich_log.write(now + ' ' + mensaje + '\r\n')
-        fich_log.close()
+from uaclient import Log
 
 
 class SIPHandler(socketserver.DatagramRequestHandler):
@@ -60,7 +51,6 @@ class SIPHandler(socketserver.DatagramRequestHandler):
             line = self.rfile.read()
             linea_decod = line.decode('utf-8').split()
             print(linea_decod)
-            
             METODO = linea_decod[0]
             if METODO == 'REGISTER':
                 client_sip = linea_decod[1].split(":")
@@ -86,17 +76,18 @@ class SIPHandler(socketserver.DatagramRequestHandler):
                     print(response_proxy)
                     if response == response_proxy:
                         self.wfile.write(b"SIP/2.0 200 OK\r\n\r\n")
-                        Log.appendlog('Send to ' + self.client_address[0] + ':' +
+                        Log.appendlog('Send to ' +
+                                      self.client_address[0] + ':' +
                                       str(self.client_address[1]) + ': ' +
                                       'SIP/2.0 200 OK\r\n\r\n', LOG_PATH)
                     else:
                         mensaje = ('ERROR Authorization invalid\r\n\r\n')
-                        self.wfile.write(bytes(mensaje,"utf-8"))
-                        Log.appendlog('Error: ' + mensaje , LOG_PATH)
-                        Log.appendlog('Send to ' + self.client_address[0] + ':' +
-                                      str(self.client_address[1]) + ': ' +
-                                      mensaje, LOG_PATH)
-                        
+                        self.wfile.write(bytes(mensaje, "utf-8"))
+                        Log.appendlog('Error: ' + mensaje, LOG_PATH)
+                        Log.appendlog('Send to ' + self.client_address[0] +
+                                      ':' + str(self.client_address[1]) +
+                                      ': ' + mensaje, LOG_PATH)
+
                 else:
                     self.wfile.write(b"SIP/2.0 401 Unauthorized\r\n" +
                                      b"WWW Authenticate: Digest " +
@@ -112,11 +103,11 @@ class SIPHandler(socketserver.DatagramRequestHandler):
                    '@' not in linea_decod[1] or
                    'SIP/2.0' not in linea_decod[2]):
                         mensaje = ('SIP/2.0 400 Bad Request\r\n\r\n')
-                        self.wfile.write(bytes(mensaje,"utf-8"))
-                        Log.appendlog('Error: ' + mensaje , LOG_PATH)
-                        Log.appendlog('Send to ' + self.client_address[0] + ':' +
-                                      str(self.client_address[1]) + ': ' +
-                                      mensaje, LOG_PATH)
+                        self.wfile.write(bytes(mensaje, "utf-8"))
+                        Log.appendlog('Error: ' + mensaje, LOG_PATH)
+                        Log.appendlog('Send to ' + self.client_address[0] +
+                                      ':' + str(self.client_address[1]) +
+                                      ': ' + mensaje, LOG_PATH)
                         break
 
                 if linea_decod[3] == 'Expires:':
@@ -140,12 +131,12 @@ class SIPHandler(socketserver.DatagramRequestHandler):
                             self.whohasexpired()
                     except ValueError:
                         mensaje = ('Error expires must be a number')
-                        self.wfile.write(bytes(mensaje,"utf-8"))
+                        self.wfile.write(bytes(mensaje, "utf-8"))
                         print(mensaje)
                         Log.appendlog('Error: ' + mensaje, LOG_PATH)
-                        Log.appendlog('Send to ' + self.client_address[0] + ':' +
-                                      str(self.client_address[1])+ ': ' +
-                                      mensaje, LOG_PATH)
+                        Log.appendlog('Send to ' + self.client_address[0] +
+                                      ':' + str(self.client_address[1]) +
+                                      ': ' + mensaje, LOG_PATH)
                         break
 
             if METODO == "INVITE":
@@ -168,53 +159,68 @@ class SIPHandler(socketserver.DatagramRequestHandler):
                                 my_socket.connect((
                                         self.dic_clients[user]["address"],
                                         int(self.dic_clients[user]["port"])))
-                                Log.appendlog('Received from ' + self.client_address[0] + ':' +
-                                              str(self.client_address[1])+ ': ' +
-                                              line.decode("utf-8") , LOG_PATH)
+                                Log.appendlog('Received from ' +
+                                              self.client_address[0] +
+                                              ':' +
+                                              str(self.client_address[1]) +
+                                              ': ' +
+                                              line.decode("utf-8"), LOG_PATH)
                                 send_message = line
                                 print (send_message)
                                 my_socket.send(send_message)
                                 message_send = ' '.join(linea_decod)
-                                Log.appendlog('Send to ' + self.dic_clients[user]["address"] + ':' +
-                                              self.dic_clients[user]["port"] + ': ' +
-                                              message_send , LOG_PATH)
+                                Log.appendlog(
+                                    'Send to ' +
+                                    self.dic_clients[user]["address"] +
+                                    ':' + self.dic_clients[user]["port"] +
+                                    ': ' + message_send, LOG_PATH)
                                 recv_message = my_socket.recv(1024)
                                 print(recv_message)
-                                Log.appendlog('Received from ' + self.dic_clients[user]["address"] + ':' +
-                                              self.dic_clients[user]["port"] + ': ' +
-                                              recv_message.decode('utf-8') , LOG_PATH)
+                                Log.appendlog(
+                                    'Received from ' +
+                                    self.dic_clients[user]["address"] +
+                                    ':' + self.dic_clients[user]["port"] +
+                                    ': ' +
+                                    recv_message.decode("utf-8"), LOG_PATH)
                                 self.wfile.write(recv_message)
-                                Log.appendlog('Send to ' + self.client_address[0] + ':' +
-                                              str(self.client_address[1])+ ': ' +
-                                              recv_message.decode('utf-8') , LOG_PATH)
+                                Log.appendlog(
+                                    'Send to ' +
+                                    self.client_address[0] + ':' +
+                                    str(self.client_address[1]) + ': ' +
+                                    recv_message.decode("utf-8"), LOG_PATH)
                         except ConnectionRefusedError:
-                            error = (b"No server listening at " +
-                                bytes(self.dic_clients[user]["address"], "utf-8")+
-                                b" port " +  bytes(self.dic_clients[user]["port"], "utf-8"))
+                            error = (
+                                b"No server listening at " +
+                                bytes(self.dic_clients[user]["address"],
+                                      "utf-8") +
+                                b" port " +
+                                bytes(self.dic_clients[user]["port"], "utf-8"))
                             self.wfile.write(error)
                             print(error)
                             Log.appendlog('Error: ' +
-                                          error.decode('utf-8') , LOG_PATH)
-                            Log.appendlog('Send to ' + str(self.client_address[0]) + ':' +
-                                          str(self.client_address[1]) + ': ' +
-                                          error.decode('utf-8') , LOG_PATH)
+                                          error.decode("utf-8"), LOG_PATH)
+                            Log.appendlog('Send to ' +
+                                          self.client_address[0] +
+                                          ':' + str(self.client_address[1]) +
+                                          ': ' +
+                                          error.decode("utf-8"), LOG_PATH)
 
                     else:
                         mensaje = 'SIP/2.0 404 User Not Found\r\n\r\n'
-                        self.wfile.write(bytes(mensaje,'utf-8'))
-                        Log.appendlog('Error: ' + mensaje , LOG_PATH)
-                        Log.appendlog('Send to ' + str(self.client_address[0]) + ':' +
-                                      str(self.client_address[1]) + ': ' +
-                                      mensaje , LOG_PATH)
+                        self.wfile.write(bytes(mensaje, "utf-8"))
+                        Log.appendlog('Error: ' + mensaje, LOG_PATH)
+                        Log.appendlog('Send to ' + self.client_address[0] +
+                                      ':' + str(self.client_address[1]) +
+                                      ': ' + mensaje, LOG_PATH)
                         break
                 except IndexError:
                     mensaje = 'Error You can not say Bye without an Invite'
-                    self.wfile.write(bytes(mensaje,'utf-8'))
+                    self.wfile.write(bytes(mensaje, "utf-8"))
                     print(mensaje)
-                    Log.appendlog('Error: ' + mensaje , LOG_PATH)
-                    Log.appendlog('Send to ' + str(self.client_address[0]) + ':' +
-                                   str(self.client_address[1]) + ': ' +
-                                   mensaje , LOG_PATH)
+                    Log.appendlog('Error: ' + mensaje, LOG_PATH)
+                    Log.appendlog('Send to ' + self.client_address[0] +
+                                  ':' + str(self.client_address[1]) +
+                                  ': ' + mensaje, LOG_PATH)
                     break
 
             print("Nuevo usuario registrado")
@@ -231,7 +237,7 @@ if __name__ == "__main__":
         NONCE = str(random.randrange(10000000000))
         """
         Cada vez que se inicia el proxy_registrar,
-        el Nonce distinto y aleatorio.
+        el Nonce es distinto y aleatorio.
         """
         fichero = sys.argv[1]
         leerxml = XML(fichero)
@@ -257,4 +263,3 @@ if __name__ == "__main__":
         print("Usage: phython3 proxy_registrar.py config")
     except (FileNotFoundError or NameError):
         print("Usage: phython3 proxy_registrar.py config")
-    
