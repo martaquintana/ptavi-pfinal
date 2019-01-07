@@ -14,7 +14,7 @@ class Log():
     def appendlog(mensaje, log_path):
         """Add to a fich log messages"""
         now = time.strftime(
-                            '%Y-%m-%d %H:%M:%S', time.gmtime(time.time()))
+                            '%Y%m%d%H%M%S', time.gmtime(time.time()))
         fich_log = open(log_path, 'a')
         mensaje = mensaje.replace('\r\n', ' ')
         fich_log.write(now + ' ' + mensaje + '\r\n')
