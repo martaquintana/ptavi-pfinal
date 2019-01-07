@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <config>
 	<server name="seldon@cooper.org" ip="127.0.0.1" puerto= "6002" ></server>
-	<database path="registro.json" passwdpath="passwd.json"></database>
+	<database path="registro.json" passwdpath="passwords.json"></database>
 	<log path="prlog.txt"></log>
 </config>
