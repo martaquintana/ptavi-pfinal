@@ -5,10 +5,7 @@ import sys
 import socketserver
 import socket
 import json
-from uaclient import XMLHandler
 from uaclient import XML
-from xml.sax import make_parser
-from xml.sax.handler import ContentHandler
 import time
 import hashlib
 import random
@@ -102,13 +99,13 @@ class SIPHandler(socketserver.DatagramRequestHandler):
                 if('sip:' not in linea_decod[1] or
                    '@' not in linea_decod[1] or
                    'SIP/2.0' not in linea_decod[2]):
-                        mensaje = ('SIP/2.0 400 Bad Request\r\n\r\n')
-                        self.wfile.write(bytes(mensaje, "utf-8"))
-                        Log.appendlog('Error: ' + mensaje, LOG_PATH)
-                        Log.appendlog('Send to ' + self.client_address[0] +
-                                      ':' + str(self.client_address[1]) +
-                                      ': ' + mensaje, LOG_PATH)
-                        break
+                    mensaje = ('SIP/2.0 400 Bad Request\r\n\r\n')
+                    self.wfile.write(bytes(mensaje, "utf-8"))
+                    Log.appendlog('Error: ' + mensaje, LOG_PATH)
+                    Log.appendlog('Send to ' + self.client_address[0] +
+                                  ':' + str(self.client_address[1]) +
+                                  ': ' + mensaje, LOG_PATH)
+                    break
 
                 if linea_decod[3] == 'Expires:':
                     try:
@@ -239,22 +236,22 @@ if __name__ == "__main__":
         Cada vez que se inicia el proxy_registrar,
         el Nonce es distinto y aleatorio.
         """
-        fichero = sys.argv[1]
-        leerxml = XML(fichero)
-        DIC_CONFIG = XML.get_diccionario(leerxml)
+        FICHERO = sys.argv[1]
+        LEERXML = XML(FICHERO)
+        DIC_CONFIG = XML.get_diccionario(LEERXML)
         if DIC_CONFIG['server_ip'] == '':
             DIC_CONFIG['server_ip'] = '127.0.0.1'
         print(DIC_CONFIG)
         LOG_PATH = DIC_CONFIG['log_path']
         # print(DIC_CONFIG['server_name'])
         Log.appendlog('Starting...', LOG_PATH)
-        serv = socketserver.UDPServer((DIC_CONFIG['server_ip'],
+        SERV = socketserver.UDPServer((DIC_CONFIG['server_ip'],
                                        int(DIC_CONFIG['server_puerto'])),
                                       SIPHandler)
         print("Server MiServidorBigBang listening at port " +
               DIC_CONFIG['server_puerto'] + "...")
         try:
-            serv.serve_forever()
+            SERV.serve_forever()
 
         except KeyboardInterrupt:
             Log.appendlog('Finishing.', LOG_PATH)

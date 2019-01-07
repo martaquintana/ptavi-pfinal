@@ -57,10 +57,10 @@ class XML:
         cHandler = XMLHandler()
         parser.setContentHandler(cHandler)
         parser.parse(open(fichero))
-        self.DIC_CONFIG = XMLHandler.get_diccionario(cHandler)
+        self.dic_config = XMLHandler.get_diccionario(cHandler)
 
     def get_diccionario(self):
-        return self.DIC_CONFIG
+        return self.dic_config
 
 
 if __name__ == "__main__":
@@ -72,11 +72,11 @@ if __name__ == "__main__":
         CONFIG = sys.argv[1]
         METODO = sys.argv[2]
         OPCION = sys.argv[3]
-        leerxml = XML(CONFIG)
-        DIC_CONFIG = XML.get_diccionario(leerxml)
+        LEERXML = XML(CONFIG)
+        DIC_CONFIG = XML.get_diccionario(LEERXML)
         print(DIC_CONFIG)
         print(DIC_CONFIG['account_username'])
-        data_list = []
+        DATA_LIST = []
         LOG_PATH = DIC_CONFIG['log_path']
         Log.appendlog('Starting...', LOG_PATH)
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as my_socket:
@@ -85,124 +85,124 @@ if __name__ == "__main__":
                                int(DIC_CONFIG['regproxy_puerto'])))
             print(METODO)
             if METODO == 'REGISTER':
-                line = ('REGISTER sip:' + DIC_CONFIG['account_username'] +
+                LINE = ('REGISTER sip:' + DIC_CONFIG['account_username'] +
                         ':' + DIC_CONFIG['uaserver_puerto'] +
                         ' SIP/2.0\r\n' + 'Expires: ' + OPCION + '\r\n\r\n')
-                print("Enviando:", line)
+                print("Enviando:", LINE)
                 Log.appendlog('Send to ' + DIC_CONFIG['regproxy_ip'] + ':' +
                               DIC_CONFIG['regproxy_puerto'] + ': ' +
-                              line, LOG_PATH)
-                my_socket.send(bytes(line, 'utf-8'))
-                data = my_socket.recv(1024)
-                recv_message = data.decode('utf-8')
-                data_list += recv_message
-                print('Recibido -- ', recv_message)
+                              LINE, LOG_PATH)
+                my_socket.send(bytes(LINE, 'utf-8'))
+                DATA = my_socket.recv(1024)
+                RECV_MESSAGE = DATA.decode('utf-8')
+                DATA_LIST += RECV_MESSAGE
+                print('Recibido -- ', RECV_MESSAGE)
                 Log.appendlog('Received from ' +
                               DIC_CONFIG['regproxy_ip'] + ':' +
                               DIC_CONFIG['regproxy_puerto'] + ': ' +
-                              recv_message, LOG_PATH)
+                              RECV_MESSAGE, LOG_PATH)
 
-                if 'nonce' in data.decode('utf-8'):
-                    nonce = data.decode('utf-8').split()[-1].split('=')[-1]
-                    m = hashlib.sha224(bytes(DIC_CONFIG['account_passwd'],
+                if 'nonce' in DATA.decode('utf-8'):
+                    nonce = DATA.decode('utf-8').split()[-1].split('=')[-1]
+                    M = hashlib.sha224(bytes(DIC_CONFIG['account_passwd'],
                                              'utf-8'))
-                    m.update(bytes(nonce, 'utf-8'))
-                    response = m.hexdigest()
+                    M.update(bytes(nonce, 'utf-8'))
+                    RESPONSE = M.hexdigest()
                     print(nonce)
-                    print(response)
-                    line = ('REGISTER sip:' + DIC_CONFIG['account_username'] +
+                    print(RESPONSE)
+                    LINE = ('REGISTER sip:' + DIC_CONFIG['account_username'] +
                             ':' + DIC_CONFIG['uaserver_puerto'] +
                             ' SIP/2.0\r\n' + 'Expires: ' + OPCION + '\r\n' +
                             'Authorization: Digest response= ' +
-                            response + '\r\n\r\n')
-                    print("Enviando:", line)
-                    my_socket.send(bytes(line, 'utf-8'))
+                            RESPONSE + '\r\n\r\n')
+                    print("Enviando:", LINE)
+                    my_socket.send(bytes(LINE, 'utf-8'))
                     Log.appendlog('Send to ' +
                                   DIC_CONFIG['regproxy_ip'] + ':' +
                                   DIC_CONFIG['regproxy_puerto'] + ': ' +
-                                  line, LOG_PATH)
-                    data = my_socket.recv(1024)
-                    recv_message = data.decode('utf-8')
-                    print('Recibido -- ', recv_message)
+                                  LINE, LOG_PATH)
+                    DATA = my_socket.recv(1024)
+                    RECV_MESSAGE = DATA.decode('utf-8')
+                    print('Recibido -- ', RECV_MESSAGE)
                     Log.appendlog('Received from ' +
                                   DIC_CONFIG['regproxy_ip'] + ':' +
                                   DIC_CONFIG['regproxy_puerto'] + ': ' +
-                                  recv_message, LOG_PATH)
+                                  RECV_MESSAGE, LOG_PATH)
 
             if METODO == 'INVITE' or METODO == 'BYE':
                 if METODO == 'BYE':
-                    line = (METODO + ' sip:' + sys.argv[-1] + ' SIP/2.0\r\n')
-                    print(line)
-                    my_socket.send(bytes(line, 'utf-8'))
+                    LINE = (METODO + ' sip:' + sys.argv[-1] + ' SIP/2.0\r\n')
+                    print(LINE)
+                    my_socket.send(bytes(LINE, 'utf-8'))
                     Log.appendlog('Send to ' +
                                   DIC_CONFIG['regproxy_ip'] + ':' +
                                   DIC_CONFIG['regproxy_puerto'] + ': ' +
-                                  line, LOG_PATH)
-                    data = my_socket.recv(1024)
-                    recv_message = data.decode('utf-8')
-                    data_list += recv_message
-                    print('Recibido -- ', recv_message)
+                                  LINE, LOG_PATH)
+                    DATA = my_socket.recv(1024)
+                    RECV_MESSAGE = DATA.decode('utf-8')
+                    DATA_LIST += RECV_MESSAGE
+                    print('Recibido -- ', RECV_MESSAGE)
                     Log.appendlog('Received from ' +
                                   DIC_CONFIG['regproxy_ip'] + ':' +
                                   DIC_CONFIG['regproxy_puerto'] + ': ' +
-                                  recv_message, LOG_PATH)
+                                  RECV_MESSAGE, LOG_PATH)
 
                 if METODO == 'INVITE':
-                    line = (METODO + ' sip:' + sys.argv[-1] + ' SIP/2.0\r\n' +
+                    LINE = (METODO + ' sip:' + sys.argv[-1] + ' SIP/2.0\r\n' +
                             'Content-Type:' + ' application/sdp\r\n' +
                             'v=0\r\n' + 'o=' + DIC_CONFIG['account_username'] +
                             ' ' + DIC_CONFIG['uaserver_ip'] + '\r\n' +
                             's= Christmas\r\n' + 't=0\r\n' + 'm=audio ' +
                             DIC_CONFIG['rtpaudio_puerto'] + ' RTP\r\n')
-                    print(line)
-                    my_socket.send(bytes(line, 'utf-8'))
+                    print(LINE)
+                    my_socket.send(bytes(LINE, 'utf-8'))
                     Log.appendlog('Send to ' +
                                   DIC_CONFIG['regproxy_ip'] + ':' +
                                   DIC_CONFIG['regproxy_puerto'] + ': ' +
-                                  line, LOG_PATH)
-                    data = my_socket.recv(1024)
-                    recv_message = data.decode('utf-8')
-                    data_list += recv_message
-                    print('Recibido -- ', recv_message)
+                                  LINE, LOG_PATH)
+                    DATA = my_socket.recv(1024)
+                    RECV_MESSAGE = DATA.decode('utf-8')
+                    DATA_LIST += RECV_MESSAGE
+                    print('Recibido -- ', RECV_MESSAGE)
                     Log.appendlog('Received from ' +
                                   DIC_CONFIG['regproxy_ip'] + ':' +
                                   DIC_CONFIG['regproxy_puerto'] + ': ' +
-                                  recv_message, LOG_PATH)
+                                  RECV_MESSAGE, LOG_PATH)
             elif METODO != ('REGISTER' or 'INVITE' or 'BYE'):
                 print("Solo puedes enviar Métodos REGISTER, INVITE o BYE")
 
-            DATOS = ''.join(data_list)
+            DATOS = ''.join(DATA_LIST)
             # print(DATOS.split())
             if (DATOS.split()[0] != 'No' and DATOS.split()[1] != '404' and
                DATOS.split()[0] != 'Error'):
                 if METODO == 'INVITE' and DATOS.split()[7] == '200':
                     print ("entra en ACK")
-                    receptor_server_IP = DATOS.split()[13]
-                    receptor_server_Puerto = DATOS.split()[18]
-                    print(receptor_server_Puerto)
-                    print(receptor_server_IP)
-                    linea = ('ACK' + ' sip:' +
+                    RECEPTOR_SERVER_IP = DATOS.split()[13]
+                    RECEPTOR_SERVER_PUERTO = DATOS.split()[18]
+                    print(RECEPTOR_SERVER_PUERTO)
+                    print(RECEPTOR_SERVER_IP)
+                    LINEA = ('ACK' + ' sip:' +
                              DIC_CONFIG['account_username'] +
                              ' SIP/2.0\r\n\r\n')
-                    my_socket.send(bytes(linea, 'utf-8'))
+                    my_socket.send(bytes(LINEA, 'utf-8'))
                     Log.appendlog('Send to ' +
                                   DIC_CONFIG['regproxy_ip'] + ':' +
                                   DIC_CONFIG['regproxy_puerto'] + ': ' +
-                                  linea, LOG_PATH)
-                    data = my_socket.recv(1024)
-                    print("ESTO MANDA EL SERVER", data.decode('utf-8'))
-                    recv_message = data.decode('utf-8')
+                                  LINEA, LOG_PATH)
+                    DATA = my_socket.recv(1024)
+                    print("ESTO MANDA EL SERVER", DATA.decode('utf-8'))
+                    RECV_MESSAGE = DATA.decode('utf-8')
                     Log.appendlog('Received from ' +
                                   DIC_CONFIG['regproxy_ip'] + ':' +
                                   DIC_CONFIG['regproxy_puerto'] + ': ' +
-                                  recv_message, LOG_PATH)
-                    fichero_audio = DIC_CONFIG["audio_path"]
-                    aEjecutar = ("./mp32rtp -i " +
-                                 receptor_server_IP + " -p " +
-                                 receptor_server_Puerto)
-                    aEjecutar += " < " + fichero_audio
-                    print("Vamos a ejecutar", aEjecutar)
-                    os.system(aEjecutar)
+                                  RECV_MESSAGE, LOG_PATH)
+                    FICHERO_AUDIO = DIC_CONFIG["audio_path"]
+                    AEJECUTAR = ("./mp32rtp -i " +
+                                 RECEPTOR_SERVER_IP + " -p " +
+                                 RECEPTOR_SERVER_PUERTO)
+                    AEJECUTAR += " < " + FICHERO_AUDIO
+                    print("Vamos a ejecutar", AEJECUTAR)
+                    os.system(AEJECUTAR)
                     print("Cancion enviada desde cliente")
 
         Log.appendlog('Finishing.', LOG_PATH)
@@ -212,7 +212,7 @@ if __name__ == "__main__":
         print("Usage: python3 uaclient.py config metodo opcion")
 
     except ConnectionRefusedError:
-        error = ("No server listening at " + DIC_CONFIG['regproxy_ip'] +
+        ERROR = ("No server listening at " + DIC_CONFIG['regproxy_ip'] +
                  " port " + DIC_CONFIG['regproxy_puerto'])
-        print(error)
-        Log.appendlog('Error: ' + error, LOG_PATH)
+        print(ERROR)
+        Log.appendlog('Error: ' + ERROR, LOG_PATH)
