@@ -96,7 +96,7 @@ class SIPHandler(socketserver.DatagramRequestHandler):
                                       ': ' + mensaje, LOG_PATH)
 
                 else:
-                    self.wfile.write(b"SIP/2.0 401 Unauthorized\r\n" +
+                    self.wfile.write(b"SIP/2.0 401 Unauthorized\r\n\r\n" +
                                      b"WWW Authenticate: Digest " +
                                      b"nonce= " + bytes(NONCE, "utf-8") +
                                      b"\r\n\r\n")

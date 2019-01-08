@@ -139,7 +139,8 @@ if __name__ == "__main__":
 
             if METODO == 'INVITE' or METODO == 'BYE':
                 if METODO == 'BYE':
-                    LINE = (METODO + ' sip:' + sys.argv[-1] + ' SIP/2.0\r\n')
+                    LINE = (METODO + ' sip:' + sys.argv[-1] +
+                            ' SIP/2.0\r\n\r\n')
                     print(LINE)
                     my_socket.send(bytes(LINE, 'utf-8'))
                     Log.appendlog('Send to ' +
@@ -156,7 +157,8 @@ if __name__ == "__main__":
                                   RECV_MESSAGE, LOG_PATH)
 
                 if METODO == 'INVITE':
-                    LINE = (METODO + ' sip:' + sys.argv[-1] + ' SIP/2.0\r\n' +
+                    LINE = (METODO + ' sip:' + sys.argv[-1] +
+                            ' SIP/2.0\r\n\r\n' +
                             'Content-Type:' + ' application/sdp\r\n' +
                             'v=0\r\n' + 'o=' + DIC_CONFIG['account_username'] +
                             ' ' + DIC_CONFIG['uaserver_ip'] + '\r\n' +
