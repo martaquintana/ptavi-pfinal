@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
-
+"""SIP uaclient."""
 import sys
 import os
 import socket
@@ -11,8 +11,10 @@ import time
 
 
 class Log():
+    """Add messages to Log Fich."""
+
     def appendlog(mensaje, log_path):
-        """Add to a fich log messages"""
+        """Add to a fich log messages."""
         now = time.strftime(
                             '%Y%m%d%H%M%S', time.gmtime(time.time()))
         fich_log = open(log_path, 'a')
@@ -22,8 +24,10 @@ class Log():
 
 
 class XMLHandler(ContentHandler):
+    """XML Handler."""
 
     def __init__(self):
+        """Dictionary Config."""
         self.diccionario = {
             "account": ['username', 'passwd'],
             "uaserver": ['ip', 'puerto'],
@@ -39,7 +43,7 @@ class XMLHandler(ContentHandler):
         self.dic_config = {}
 
     def startElement(self, name, attrs):
-
+        """Here I keep the atribute values."""
         if name in self.diccionario.keys():
             # De esta manera tomamos los valores de los atributos
             for atributo in self.diccionario[name]:
@@ -47,12 +51,15 @@ class XMLHandler(ContentHandler):
                                                                    "")
 
     def get_diccionario(self):
+        """Getting the Dictionary Config."""
         return self.dic_config
 
 
 class XML:
+    """Read XML and getting the dictionary config."""
 
     def __init__(self, fichero):
+        """Read xml fich config."""
         parser = make_parser()
         cHandler = XMLHandler()
         parser.setContentHandler(cHandler)
@@ -60,6 +67,7 @@ class XML:
         self.dic_config = XMLHandler.get_diccionario(cHandler)
 
     def get_diccionario(self):
+        """Gettig the dictinary config."""
         return self.dic_config
 
 
@@ -176,7 +184,7 @@ if __name__ == "__main__":
             if (DATOS.split()[0] != 'No' and DATOS.split()[1] != '404' and
                DATOS.split()[0] != 'Error'):
                 if METODO == 'INVITE' and DATOS.split()[7] == '200':
-                    print ("entra en ACK")
+                    print("entra en ACK")
                     RECEPTOR_SERVER_IP = DATOS.split()[13]
                     RECEPTOR_SERVER_PUERTO = DATOS.split()[18]
                     print(RECEPTOR_SERVER_PUERTO)
@@ -189,13 +197,6 @@ if __name__ == "__main__":
                                   DIC_CONFIG['regproxy_ip'] + ':' +
                                   DIC_CONFIG['regproxy_puerto'] + ': ' +
                                   LINEA, LOG_PATH)
-                    DATA = my_socket.recv(1024)
-                    print("ESTO MANDA EL SERVER", DATA.decode('utf-8'))
-                    RECV_MESSAGE = DATA.decode('utf-8')
-                    Log.appendlog('Received from ' +
-                                  DIC_CONFIG['regproxy_ip'] + ':' +
-                                  DIC_CONFIG['regproxy_puerto'] + ': ' +
-                                  RECV_MESSAGE, LOG_PATH)
                     FICHERO_AUDIO = DIC_CONFIG["audio_path"]
                     AEJECUTAR = ("./mp32rtp -i " +
                                  RECEPTOR_SERVER_IP + " -p " +

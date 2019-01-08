@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
-
+"""SIP uaserver."""
 import sys
 import os
 import socketserver
@@ -10,9 +10,11 @@ from uaclient import Log
 
 class SIPHandler(socketserver.DatagramRequestHandler):
     """SIP server class."""
+
     receptor = []
 
     def handle(self):
+        """SIP Handle."""
         while 1:
             # Leyendo línea a línea lo que nos envía el cliente
             line = self.rfile.read()
@@ -63,7 +65,7 @@ class SIPHandler(socketserver.DatagramRequestHandler):
 
             if metodo == 'ACK':
                 """ aejecutar es un string con lo que se ha
-                    de ejecutar en la shell
+                    de ejecutar en la shell.
                 """
                 receptor_ip = self.receptor[0]
                 receptor_puerto = self.receptor[1]
@@ -79,10 +81,7 @@ class SIPHandler(socketserver.DatagramRequestHandler):
                 aejecutar += " < " + fichero_audio
                 print("Vamos a ejecutar", aejecutar)
                 os.system(aejecutar)
-                self.wfile.write(b"cancion.mp3 enviada desde servidor")
-                Log.appendlog('Send to ' + self.client_address[0] + ':' +
-                              str(self.client_address[1]) + ': ' +
-                              'cancion.mp3 enviada desde servidor', LOG_PATH)
+                print("cancion.mp3 enviada desde servidor")
                 break
 
             if metodo == 'BYE':

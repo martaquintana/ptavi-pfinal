@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
-
+"""SIP proxy registrar."""
 import sys
 import socketserver
 import socket
@@ -65,7 +65,7 @@ class SIPHandler(socketserver.DatagramRequestHandler):
                 if (sip_address in self.dic_clients and
                    'Authorization:' in linea_decod):
                     response = linea_decod[8]
-                    print (response)
+                    print(response)
                     m = hashlib.sha224(bytes(self.dic_registrados[sip_address],
                                              'utf-8'))
                     m.update(bytes(NONCE, 'utf-8'))
@@ -163,7 +163,6 @@ class SIPHandler(socketserver.DatagramRequestHandler):
                                               ': ' +
                                               line.decode("utf-8"), LOG_PATH)
                                 send_message = line
-                                print (send_message)
                                 my_socket.send(send_message)
                                 message_send = ' '.join(linea_decod)
                                 Log.appendlog(
@@ -173,18 +172,19 @@ class SIPHandler(socketserver.DatagramRequestHandler):
                                     ': ' + message_send, LOG_PATH)
                                 recv_message = my_socket.recv(1024)
                                 print(recv_message)
-                                Log.appendlog(
-                                    'Received from ' +
-                                    self.dic_clients[user]["address"] +
-                                    ':' + self.dic_clients[user]["port"] +
-                                    ': ' +
-                                    recv_message.decode("utf-8"), LOG_PATH)
-                                self.wfile.write(recv_message)
-                                Log.appendlog(
-                                    'Send to ' +
-                                    self.client_address[0] + ':' +
-                                    str(self.client_address[1]) + ': ' +
-                                    recv_message.decode("utf-8"), LOG_PATH)
+                                if(recv_message != b''):
+                                    Log.appendlog(
+                                        'Received from ' +
+                                        self.dic_clients[user]["address"] +
+                                        ':' + self.dic_clients[user]["port"] +
+                                        ': ' +
+                                        recv_message.decode("utf-8"), LOG_PATH)
+                                    self.wfile.write(recv_message)
+                                    Log.appendlog(
+                                        'Send to ' +
+                                        self.client_address[0] + ':' +
+                                        str(self.client_address[1]) + ': ' +
+                                        recv_message.decode("utf-8"), LOG_PATH)
                         except ConnectionRefusedError:
                             error = (
                                 b"No server listening at " +
