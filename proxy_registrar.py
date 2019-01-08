@@ -49,6 +49,16 @@ class SIPHandler(socketserver.DatagramRequestHandler):
             linea_decod = line.decode('utf-8').split()
             print(linea_decod)
             METODO = linea_decod[0]
+            if('sip:' not in linea_decod[1] or
+               '@' not in linea_decod[1] or
+               'SIP/2.0' not in linea_decod[2]):
+                    mensaje = ('SIP/2.0 400 Bad Request\r\n\r\n')
+                    self.wfile.write(bytes(mensaje, "utf-8"))
+                    Log.appendlog('Error: ' + mensaje, LOG_PATH)
+                    Log.appendlog('Send to ' + self.client_address[0] +
+                                  ':' + str(self.client_address[1]) +
+                                  ': ' + mensaje, LOG_PATH)
+                    break
             if METODO == 'REGISTER':
                 client_sip = linea_decod[1].split(":")
                 sip_address = client_sip[1]
@@ -95,17 +105,6 @@ class SIPHandler(socketserver.DatagramRequestHandler):
                                   'SIP/2.0 401 Unauthorized\r\n' +
                                   'WWW Authenticate: Digest ' +
                                   'nonce= ' + NONCE + '\r\n\r\n', LOG_PATH)
-
-                if('sip:' not in linea_decod[1] or
-                   '@' not in linea_decod[1] or
-                   'SIP/2.0' not in linea_decod[2]):
-                    mensaje = ('SIP/2.0 400 Bad Request\r\n\r\n')
-                    self.wfile.write(bytes(mensaje, "utf-8"))
-                    Log.appendlog('Error: ' + mensaje, LOG_PATH)
-                    Log.appendlog('Send to ' + self.client_address[0] +
-                                  ':' + str(self.client_address[1]) +
-                                  ': ' + mensaje, LOG_PATH)
-                    break
 
                 if linea_decod[3] == 'Expires:':
                     try:
@@ -211,7 +210,7 @@ class SIPHandler(socketserver.DatagramRequestHandler):
                                       ': ' + mensaje, LOG_PATH)
                         break
                 except IndexError:
-                    mensaje = 'Error You can not say Bye without an Invite'
+                    mensaje = 'SIP/2.0 405 Method Not Allowed\r\n\r\n'
                     self.wfile.write(bytes(mensaje, "utf-8"))
                     print(mensaje)
                     Log.appendlog('Error: ' + mensaje, LOG_PATH)
