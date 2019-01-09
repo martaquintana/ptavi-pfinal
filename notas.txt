@@ -1,0 +1,36 @@
+NOTAS IMPORTANTES:
+-- Las capturas están realizadas haciendo un INVITE,
+    entre el ua2 penny@cheesecake.net y el ua1 leonard@bigbang.org.
+    (ua2 manda el INVITE a ua1)
+
+-- En la práctica siguiendo el RFC los mensajes SIP solo la primera letra debería ser en mayúscula,
+   pero al igual que pone en las instrucciones de la práctica
+   he decidicio dejar REGISTER en vez de Register por claridad a la hora de mandar los mensajes 
+   y ver las capturas. Lo siento. 
+
+
+En este fichero explico un poco como trata mi práctica a los errores no especificados
+    en las instrucciones de la práctica y sus códigos de respuesta.
+
+- Si acabas de iniciar el proxy_registrar y el uaserver y el cliente lo primero que 
+    manda es un BYE, el proxy_registrar le manda un mensaje 405 Method Not Allowed.
+    Si mandas un BYE y no has hecho un INVITE antes también te manda este error.
+
+- Si ponemos el método mal al introducirlo por la sell, el uaclient ya nos manda un mensaje de que 
+    solo podemos enviar REGISTER, INVITE o BYE.
+
+- Si queremos modificar el uaclient para que envie mal las cabeceras,
+    porque en mi caso siempre las va a mandar bien, 
+    nos responderá (el proxy_registrar o el uaserver) con un 400 Bad Request.
+
+-Si introducimos el expires mal (hay algun char), Nos salta un mensaje: 
+    ERROR Authorization Invalid + Error expires must be a number.
+
+-Si pones mal el usuario que invitas por primera vez, te manda un 400 Bad Request.
+
+-Si registras a ambos uaclient y invitas por primera vez a un usuario que no esta registrado:
+    404 User Not Found.
+
+- Si invitas a otro usuario distinto(que no esta registrado),
+    pero ya has hecho un INVITE bien antes,
+    manda lo anterior que mandó, aunque no debería ser así.
